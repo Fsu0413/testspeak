@@ -26,8 +26,8 @@ vector<tlData> TLData;
 string talk(string toSend)
 {
     Json::Value v(Json::objectValue);
-    v["key"] = TLData.at(3).key;
-    v["userid"] = TLData.at(3).userId;
+    v["key"] = TLData.at(4).key;
+    v["userid"] = TLData.at(4).userId;
     v["info"] = toSend;
 
     Json::FastWriter writer;
@@ -44,15 +44,24 @@ string talk(string toSend)
     HTTPHeader header;
     header.insert("Content-Type", "text/json");
 
-    HTTPClient client;
-    client.post(&url, &sendData, &header);
-    if (client.status_code() != 200) {
-        cout << "client error, code = " << client.status_code() << endl;
-        return "Hello";
+    std::string body;
+    for (int i = 0; i < 15; ++i) {
+        HTTPClient client;
+        client.post(&url, &sendData, &header);
+        if (client.status_code() != 200) {
+            cout << "client error, code = " << client.status_code() << endl;
+        } else {
+            body = *client.body();
+            break;
+        }
+    }
+
+    if (body.empty()) {
+        cout << "client error 15 times" << endl;
     } else {
         Json::Reader reader;
         Json::Value value;
-        reader.parse(*(client.body()), value);
+        reader.parse(body, value);
 
         if (value.isMember("code")) {
             int x = value["code"].asInt();
@@ -81,9 +90,10 @@ extern "C" int main(int argc, char *argv[])
     TLData.push_back(tlData(string("f3ebf25d77084a63a0f874c83f2c7418"), string("test5")));
 
     TCPClient client;
-    if (client.connect(40000, "42.84.45.82") == 0) {
+    if (client.connect(40000, "192.168.1.70") == 0) {
         std::string hello = "Hello\n";
-        client.send(hello, hello.length() + 1);
+        cout << "Sent: " << hello;
+        client.send(hello);
 
         for (;;) {
             ostringstream oss1;
@@ -100,7 +110,7 @@ extern "C" int main(int argc, char *argv[])
             oss2 << talk(oss1.str()) << endl;
             cout << "Sent: " << oss2.str();
             //sleep(3);
-            client.send(oss2.str(), oss2.str().length() + 1);
+            client.send(oss2.str());
         }
     }
 

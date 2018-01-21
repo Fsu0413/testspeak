@@ -102,7 +102,9 @@ void Dialog::handleNewConnection()
     QTcpServer *server = qobject_cast<QTcpServer *>(sender());
     if (server != nullptr) {
         socket = server->nextPendingConnection();
+        qDebug() << "connected.";
         connect(socket, &QTcpSocket::disconnected, socket, &QTcpSocket::deleteLater);
+        connect(socket, &QTcpSocket::disconnected, []() { qDebug() << "disconnected."; });
         connect(socket, &QTcpSocket::readyRead, this, &Dialog::receiveFromClient);
         //send1stPack();
     }
@@ -152,7 +154,8 @@ void Dialog::receiveFromClient()
     QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
     if (socket != nullptr) {
         while (socket->canReadLine()) {
-            str = socket->readLine();
+            str = socket->readLine().trimmed();
+
             to = 2;
             sendPack();
         }

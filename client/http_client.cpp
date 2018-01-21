@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <cstring>
 
 HTTPClient::HTTPClient() {
   recv_status = new std::string();
