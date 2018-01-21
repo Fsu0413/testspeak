@@ -14,3 +14,9 @@ The following files are under The Unlicense.
 /server/main.cpp
 /server/dialog.h
 /client/compile.sh
+
+
+Note:
+This is a project just for test and will be deleted someday.
+It contains neither compression nor encryption code for socket communication.
+I DON'T SUGGEST THAT YOU USE THIS PROJECT IN YOUR PRODUCT!!!
