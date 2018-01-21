@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/x">
+        <file>change.txt</file>
+    </qresource>
+</RCC>
