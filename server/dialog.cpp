@@ -93,7 +93,7 @@ void Dialog::send1stPack()
 {
     setStuckString();
 
-    to = 2;
+    to = 0;
     sendPack();
 }
 
@@ -136,6 +136,7 @@ void Dialog::receive()
             switch (x) {
             case 100000: {
                 str = ob.value("text").toString();
+                str.replace(QRegExp("\\s"), QString());
                 QTimer::singleShot(delay, this, SLOT(sendToClient()));
                 break;
             }
@@ -156,7 +157,7 @@ void Dialog::receiveFromClient()
         while (socket->canReadLine()) {
             str = socket->readLine().trimmed();
 
-            to = 2;
+            to = 0;
             sendPack();
         }
     }
