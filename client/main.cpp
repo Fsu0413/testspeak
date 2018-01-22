@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <regex>
 using namespace std;
 
 struct tlData
@@ -26,8 +27,8 @@ vector<tlData> TLData;
 string talk(string toSend)
 {
     Json::Value v(Json::objectValue);
-    v["key"] = TLData.at(4).key;
-    v["userid"] = TLData.at(4).userId;
+    v["key"] = TLData.at(1).key;
+    v["userid"] = TLData.at(1).userId;
     v["info"] = toSend;
 
     Json::FastWriter writer;
@@ -67,9 +68,12 @@ string talk(string toSend)
             int x = value["code"].asInt();
 
             switch (x) {
-            case 100000:
-                return value["text"].asString();
+            case 100000: {
+                string st = value["text"].asString();
+                regex re("\\s");
+                return regex_replace(st, re, "");
                 break;
+            }
             default:
                 return "Hello";
             }
@@ -105,7 +109,7 @@ extern "C" int main(int argc, char *argv[])
                 }
                 oss1 << string(x);
             }
-            cout << "Received: " << oss1.str() << endl;
+            cout << "Received: " << oss1.str();
             ostringstream oss2;
             oss2 << talk(oss1.str()) << endl;
             cout << "Sent: " << oss2.str();

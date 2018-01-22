@@ -139,7 +139,7 @@ int HTTPClient::send_and_recive(std::string *addr, int port, std::string *mesg,
   tcp_client->disconnect();
   delete tcp_client;
 
-  delete recv_buf;
+  delete [] recv_buf;
 
   return 0;
 }

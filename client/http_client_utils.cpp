@@ -3,9 +3,8 @@
 #include <http_client_utils.hpp>
 
 std::string int2str(int n) {
-	char* _str = new char[0x100];
+	char _str[0x100];
 	::sprintf(_str, "%u", n);
-	delete _str;
 	return std::string(_str);
 }
 
