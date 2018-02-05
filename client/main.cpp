@@ -86,7 +86,7 @@ string talk(string toSend)
 }
 
 #ifdef __GNU_LINUX__
-static inline Sleep(uint32_t t)
+static inline void Sleep(uint32_t t)
 {
     usleep(t * 1000);
 }
