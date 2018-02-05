@@ -32,3 +32,5 @@ HEADERS += \
 
 RESOURCES += \
     rc.qrc
+
+ANDROID_PACKAGE_SOURCE_DIR = $$_PRO_FILE_PWD_/android

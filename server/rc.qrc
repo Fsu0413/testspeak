@@ -1,5 +1,9 @@
 <RCC>
     <qresource prefix="/x">
         <file>change.txt</file>
+        <file>recvdup.txt</file>
+        <file>senddup.txt</file>
+        <file>parrotdup.txt</file>
+        <file>greet.txt</file>
     </qresource>
 </RCC>

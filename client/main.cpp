@@ -4,10 +4,10 @@
 #include "json/writer.h"
 
 #include <iostream>
+#include <regex>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <regex>
 using namespace std;
 
 struct tlData
@@ -27,8 +27,8 @@ vector<tlData> TLData;
 string talk(string toSend)
 {
     Json::Value v(Json::objectValue);
-    v["key"] = TLData.at(1).key;
-    v["userid"] = TLData.at(1).userId;
+    v["key"] = TLData.at(2).key;
+    v["userid"] = TLData.at(2).userId;
     v["info"] = toSend;
 
     Json::FastWriter writer;
@@ -85,6 +85,30 @@ string talk(string toSend)
     return "Hello";
 }
 
+#ifdef __GNU_LINUX__
+static inline Sleep(uint32_t t)
+{
+    usleep(t * 1000);
+}
+#else
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+#include <random>
+
+void randomSleep(const string &str)
+{
+    int i = 1500;
+    int a = 7500;
+
+    int n = 0;
+    for (int x = 0; x < str.size(); ++x) {
+        n += (std::random_device()() % 60 + 15);
+    }
+
+    Sleep(std::random_device()() % (a - i) + i + n);
+}
+
 extern "C" int main(int argc, char *argv[])
 {
     TLData.push_back(tlData(string("884b7214b1774e74963fa30f468126aa"), string("test1")));
@@ -93,29 +117,36 @@ extern "C" int main(int argc, char *argv[])
     TLData.push_back(tlData(string("93582ff93fe64a69b5832c2d6519d868"), string("test4")));
     TLData.push_back(tlData(string("f3ebf25d77084a63a0f874c83f2c7418"), string("test5")));
 
-    TCPClient client;
-    if (client.connect(40000, "192.168.1.70") == 0) {
-        std::string hello = "Hello\n";
-        cout << "Sent: " << hello;
-        client.send(hello);
-
-        for (;;) {
-            ostringstream oss1;
-            char x[2] = {0, 0};
-            while (x[0] != '\n') {
-                int ret = client.recive(x, 1, 0);
-                if (ret == -1) {
-                    // ??
+    for (;;) {
+        TCPClient *client = new TCPClient;
+        if (client->connect(40000, "192.168.1.71") == 0) {
+            for (;;) {
+                ostringstream oss1;
+                char x[2] = {0, 0};
+                bool f = false;
+                while (x[0] != '\n') {
+                    int ret = client->recive(x, 1, 0);
+                    if (ret <= 0) {
+                        f = true;
+                        break;
+                    }
+                    oss1 << string(x);
                 }
-                oss1 << string(x);
+                if (f)
+                    break;
+
+                cout << "Received: " << oss1.str();
+                ostringstream oss2;
+                oss2 << talk(oss1.str()) << endl;
+                string str = oss2.str();
+                cout << "Sending: " << str;
+                randomSleep(str);
+                if (client->send(str) <= 0)
+                    break;
             }
-            cout << "Received: " << oss1.str();
-            ostringstream oss2;
-            oss2 << talk(oss1.str()) << endl;
-            cout << "Sent: " << oss2.str();
-            //sleep(3);
-            client.send(oss2.str());
         }
+        client->disconnect();
+        delete client;
     }
 
     return 0;
