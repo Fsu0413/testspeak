@@ -60,11 +60,11 @@ Dialog::Dialog(QWidget *parent)
     : QWidget(parent)
     , socket(nullptr)
 {
-    TLData << tlData(QStringLiteral("884b7214b1774e74963fa30f468126aa"), QStringLiteral("test1"));
-    TLData << tlData(QStringLiteral("15ba950f34fb437dbfc1ab35c7b23949"), QStringLiteral("test2"));
-    TLData << tlData(QStringLiteral("9b9b40047d9c43e8b4789c0f35ae78c1"), QStringLiteral("test3"));
-    TLData << tlData(QStringLiteral("93582ff93fe64a69b5832c2d6519d868"), QStringLiteral("test4"));
-    TLData << tlData(QStringLiteral("f3ebf25d77084a63a0f874c83f2c7418"), QStringLiteral("test5"));
+    TLData << tlData(QStringLiteral("e05c7e3c40544876896bc1312802a693"), QStringLiteral("rp"));
+    TLData << tlData(QStringLiteral("c0edfa86336345e4b33e706c704aa946"), QStringLiteral("cw"));
+    TLData << tlData(QStringLiteral("346af706007f40a29461f2bed2bed1d3"), QStringLiteral("ecy"));
+    TLData << tlData(QStringLiteral("ca3f89d3017a4240833185349f1af003"), QStringLiteral("yx"));
+    TLData << tlData(QStringLiteral("1607a0d5063943989accb204fdd51f13"), QStringLiteral("zr"));
 
     to = 3;
 
@@ -137,6 +137,7 @@ void Dialog::startTyping()
 {
     if (str.isEmpty()) {
         int del = generateRandom(sendDelay);
+        edit->selectAll();
         QTimer::singleShot(del, this, SLOT(sendToClient()));
     } else {
         int del = 0;
