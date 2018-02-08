@@ -16,7 +16,7 @@
 #include <QtMath>
 #include <random>
 
-const int delay = 3000; //1000;
+const int thinkdelay = 3000; //1000;
 const int typedelay = 200;
 const int sendDelay = 500;
 
@@ -66,7 +66,7 @@ Dialog::Dialog(QWidget *parent)
     TLData << tlData(QStringLiteral("ca3f89d3017a4240833185349f1af003"), QStringLiteral("yx"));
     TLData << tlData(QStringLiteral("1607a0d5063943989accb204fdd51f13"), QStringLiteral("zr"));
 
-    to = 3;
+    to = 2;
 
     nam1 = new QNetworkAccessManager(this);
     //QTimer::singleShot(5000, this, SLOT(send1stPack()));
@@ -142,7 +142,7 @@ void Dialog::startTyping()
     } else {
         int del = 0;
         if (edit->text().isEmpty())
-            del = generateRandom(delay);
+            del = generateRandom(thinkdelay);
         else
             del = generateRandom(typedelay);
         QTimer::singleShot(del, this, SLOT(typing()));
