@@ -42,6 +42,13 @@
 	},
 	{
 		"name": "帅帅",
-		"gender": "male",
+		"gender": "male"
+	},
+	{
+		"name": "小芳",
+		"gender": "female",
+		"key": "637112039c3b4c169efdd08bc1881bf9",
+		"comments": "社交社群 聊天调侃",
+		"aiFile": "ai/xiaofang.lua"
 	}
 ]
