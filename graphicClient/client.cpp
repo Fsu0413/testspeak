@@ -86,8 +86,9 @@ void Client::notifiedSpoken(const QJsonObject &contents)
     if (!groupsent)
         toyou = (to == selfName);
     QString content = contents.value("content").toString();
+    quint32 time = quint32(contents.value("time").toDouble());
 
-    emit playerSpoken(from, to, content, fromyou, toyou, groupsent);
+    emit playerSpoken(from, to, content, fromyou, toyou, groupsent, time);
 }
 
 void Client::signIn()

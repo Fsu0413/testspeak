@@ -158,7 +158,7 @@ end
 send = function(content)
 	me:debugOutput("send" .. content)
 	if data.speakingTo ~= "" then
-		lastSent = content
+		data.lastSent = content
 		sendTo(data.speakingTo, content)
 		me:addTimer(consts.timeoutTimerId, generateRandom(consts.timeoutTimeout))
 	end

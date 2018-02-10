@@ -5,6 +5,7 @@
 #include <QByteArray>
 #include <QCloseEvent>
 #include <QComboBox>
+#include <QDateTime>
 #include <QFile>
 #include <QFont>
 #include <QFontMetrics>
@@ -128,7 +129,7 @@ void Dialog::playerDetail(QJsonObject)
     // do nothing
 }
 
-void Dialog::playerSpoken(QString from, QString to, QString content, bool fromYou, bool toYou, bool groupsent)
+void Dialog::playerSpoken(QString from, QString to, QString content, bool fromYou, bool toYou, bool groupsent, quint32 time)
 {
     if (fromYou)
         from = tr("you");
@@ -138,7 +139,13 @@ void Dialog::playerSpoken(QString from, QString to, QString content, bool fromYo
     else if (groupsent)
         to = tr("__ALLPLAYERS__");
 
-    QString x = tr("%1 said to %2: ").arg(from).arg(to);
+    QString timestr;
+    if (time != 0)
+        timestr = QDateTime::fromTime_t(time).time().toString();
+    else
+        timestr = "sometime";
+
+    QString x = tr("%1 said to %2 at %3: ").arg(from).arg(to).arg(timestr);
     x.append(content);
     listWidget->addItem(x);
     listWidget->scrollToBottom();

@@ -187,7 +187,7 @@ void Ai::playerDetail(QJsonObject ob)
     pcall(2);
 }
 
-void Ai::playerSpoken(QString from, QString to, QString content, bool fromYou, bool toYou, bool groupsent)
+void Ai::playerSpoken(QString from, QString to, QString content, bool fromYou, bool toYou, bool groupsent, quint32 time)
 {
     lua_getglobal(l, "playerSpoken");
     lua_pushstring(l, from.toUtf8().constData());
@@ -196,7 +196,8 @@ void Ai::playerSpoken(QString from, QString to, QString content, bool fromYou, b
     lua_pushboolean(l, fromYou);
     lua_pushboolean(l, toYou);
     lua_pushboolean(l, groupsent);
-    pcall(6);
+    lua_pushinteger(l, (lua_Integer)time);
+    pcall(7);
 }
 
 void Ai::receive()
