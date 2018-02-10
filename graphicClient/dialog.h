@@ -1,19 +1,16 @@
 #ifndef DIALOG_H
 #define DIALOG_H
 
-#include <QComboBox>
-#include <QJsonDocument>
 #include <QJsonObject>
-#include <QLineEdit>
-#include <QListWidget>
 #include <QMap>
-#include <QNetworkAccessManager>
-#include <QPointer>
-#include <QPushButton>
 #include <QString>
-#include <QTcpSocket>
 #include <QWidget>
 
+class QCloseEvent;
+class QListWidget;
+class QComboBox;
+class QLineEdit;
+class QPushButton;
 class Client;
 
 class Dialog : public QWidget
@@ -21,7 +18,7 @@ class Dialog : public QWidget
     Q_OBJECT
 
 public:
-    Dialog(QWidget *parent = 0);
+    Dialog(QWidget *parent = nullptr);
     ~Dialog();
 
     QMap<QString, QString> lastSent;

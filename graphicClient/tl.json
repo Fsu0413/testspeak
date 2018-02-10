@@ -3,6 +3,7 @@
 		"name": "小瑟",
 		"key": "7ada11095ad24a499cd253be48574b0e",
 		"gender": "female",
+		"aiFile": "ai/legacyAi.lua",
 		"age": 19,
 		"zodiac": "taurus",
 		"comments": "游戏 休闲娱乐"
@@ -38,12 +39,17 @@
 		"age": 20,
 		"zodiac": "aries",
 		"comments": "社交社群 虚拟宠物"
-	}，
+	},
 	{
 		"name": "老裴",
 		"key": "c75f179984b24a5cbfb4931cf285b8bf",
 		"gender": "male",
 		"age": 18,
 		"comments": "社交社群 虚拟陪聊"
+	},
+	{
+		"name": "帅帅",
+		"gender": "male",
+		"age": 26
 	}
 ]

@@ -1,17 +1,13 @@
 #include "client.h"
+#include <QByteArray>
 #include <QDebug>
-#include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonValue>
+#include <QList>
 #include <QMap>
 #include <QPointer>
-#include <QTcpServer>
 #include <QTcpSocket>
-#include <QtAlgorithms>
-#include <QtMath>
-#include <random>
 
 QPointer<QTcpSocket> socket;
 
@@ -40,8 +36,6 @@ void Client::connectToHost(const QString &host, int port)
 {
     if (socket)
         socket->deleteLater();
-
-    socket = new QTcpSocket;
 
     socket = new QTcpSocket(this);
     connect(socket, &QTcpSocket::connected, this, &Client::signIn);
