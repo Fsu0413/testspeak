@@ -128,7 +128,7 @@ public:
 
         auto copy = content;
         copy[QStringLiteral("protocolValue")] = int(CP_Spoken);
-        copy[QStringLiteral("time")] = QDateTime::currentDateTime().toTime_t();
+        copy[QStringLiteral("time")] = qint64(QDateTime::currentDateTime().toTime_t());
 
         QJsonDocument doc(copy);
         foreach (QTcpSocket *to, tos)
