@@ -1,5 +1,5 @@
 {
-	"tlset": 2,
-	"serverHost": "192.168.1.70",
+	"tlset": 6,
+	"serverHost": "192.168.1.74",
 	"serverPort": 40001
 }

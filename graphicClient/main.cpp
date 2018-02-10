@@ -1,5 +1,6 @@
 #include "dialog.h"
 #include <QApplication>
+#include <QDebug>
 #include <QDir>
 #include <QStyleFactory>
 
