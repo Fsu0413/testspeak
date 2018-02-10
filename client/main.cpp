@@ -27,8 +27,8 @@ vector<tlData> TLData;
 string talk(string toSend)
 {
     Json::Value v(Json::objectValue);
-    v["key"] = TLData.at(2).key;
-    v["userid"] = TLData.at(2).userId;
+    v["key"] = TLData.at(3).key;
+    v["userid"] = TLData.at(3).userId;
     v["info"] = toSend;
 
     Json::FastWriter writer;
@@ -119,7 +119,7 @@ extern "C" int main(int argc, char *argv[])
 
     for (;;) {
         TCPClient *client = new TCPClient;
-        if (client->connect(40000, "192.168.1.71") == 0) {
+        if (client->connect(40000, "192.168.1.72") == 0) {
             for (;;) {
                 ostringstream oss1;
                 char x[2] = {0, 0};
