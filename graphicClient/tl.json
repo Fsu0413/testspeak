@@ -12,6 +12,7 @@
 		"name": "老游",
 		"key": "ca88160bfc26416c8e8b56f228c936a7",
 		"gender": "male",
+		"aiFile": "ai/legacyAi.lua",
 		"age": 25,
 		"zodiac": "libra",
 		"comments": "游戏 游戏互动"
@@ -20,6 +21,7 @@
 		"name": "小二",
 		"key": "d4780ff86912451d9ff57d61c4d1354e",
 		"gender": "female",
+		"aiFile": "ai/legacyAiNoGender.lua",
 		"age": 12,
 		"zodiac": "virgo",
 		"comments": "游戏 虚拟伴侣"
@@ -28,6 +30,7 @@
 		"name": "小珍",
 		"key": "fb2b452347644bf1a659b8f0371afb4b",
 		"gender": "female",
+		"aiFile": "ai/xiaozhen.lua",
 		"age": 17,
 		"zodiac": "aquarius",
 		"comments": "社交社群 聊天倾诉"

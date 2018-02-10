@@ -56,14 +56,15 @@ public:
     void queryPlayer(const QString &name);
     void queryTl(const QString &id, const QString &content);
     void addTimer(int timerId, int timeOut);
-	void killTimer(int timerId);
-    // void popupNameCombo();
+    void killTimer(int timerId);
     bool setNameCombo(const QString &name);
     void setText(const QString &text);
-    void animateSend(int timeout);
+    void sendPress();
+    void sendRelease();
+    void sendClick();
     QString getFirstChar(const QString &c);
     QString removeFirstChar(const QString &c);
-	void debugOutput(const QString &c);
+    void debugOutput(const QString &c);
 };
 
 

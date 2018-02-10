@@ -228,26 +228,26 @@ end
 playerDetail = function(obname, obgender)
 	me:debugOutput("playerDetail"..obname..obgender)
 	if (data.spokenToMe[obname] ~= nil) and (data.speakingTo == "") then
-		if (me:gender() ~= obgender) then
+		--if (me:gender() ~= obgender) then
 			data.speakingTo = obname
 			talk(data.spokenToMe[obname])
 			data.spokenToMe = {}
 			data.groupSpoken = {}
-		else
-			sendTo(obname, getStringFromBase("g" .. me:gender()))
-			data.spokenToMe[obname] = nil
-		end
+		--else
+		--	sendTo(obname, getStringFromBase("g" .. me:gender()))
+		--	data.spokenToMe[obname] = nil
+		--end
 	else
 		for _, n in ipairs(data.groupSpoken) do
 			if (n == obname) and (data.speakingTo == "") then
-				if (me:gender() ~= obgender) then
+			--	if (me:gender() ~= obgender) then
 					local sending = getStringFromBase("greet")
 					sending = string.gsub(sending, "__AIREPLACE__", me:name())
 					sendTo(obname, sending)
-				else
-					table.remove(data.groupSpoken, _)
-					break
-				end
+			--	else
+			--		table.remove(data.groupSpoken, _)
+			--		break
+			--	end
 			end
 		end
 	end

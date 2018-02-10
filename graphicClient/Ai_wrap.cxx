@@ -3153,21 +3153,64 @@ fail:
 }
 
 
-static int _wrap_Ai_animateSend(lua_State* L) {
+static int _wrap_Ai_sendPress(lua_State* L) {
   int SWIG_arg = 0;
   Ai *arg1 = (Ai *) 0 ;
-  int arg2 ;
   
-  SWIG_check_num_args("Ai::animateSend",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::animateSend",1,"Ai *");
-  if(!lua_isnumber(L,2)) SWIG_fail_arg("Ai::animateSend",2,"int");
+  SWIG_check_num_args("Ai::sendPress",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::sendPress",1,"Ai *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
-    SWIG_fail_ptr("Ai_animateSend",1,SWIGTYPE_p_Ai);
+    SWIG_fail_ptr("Ai_sendPress",1,SWIGTYPE_p_Ai);
   }
   
-  arg2 = (int)lua_tonumber(L, 2);
-  (arg1)->animateSend(arg2);
+  (arg1)->sendPress();
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_Ai_sendRelease(lua_State* L) {
+  int SWIG_arg = 0;
+  Ai *arg1 = (Ai *) 0 ;
+  
+  SWIG_check_num_args("Ai::sendRelease",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::sendRelease",1,"Ai *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
+    SWIG_fail_ptr("Ai_sendRelease",1,SWIGTYPE_p_Ai);
+  }
+  
+  (arg1)->sendRelease();
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_Ai_sendClick(lua_State* L) {
+  int SWIG_arg = 0;
+  Ai *arg1 = (Ai *) 0 ;
+  
+  SWIG_check_num_args("Ai::sendClick",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::sendClick",1,"Ai *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
+    SWIG_fail_ptr("Ai_sendClick",1,SWIGTYPE_p_Ai);
+  }
+  
+  (arg1)->sendClick();
   
   return SWIG_arg;
   
@@ -3286,7 +3329,9 @@ static swig_lua_method swig_Ai_methods[]= {
     { "killTimer", _wrap_Ai_killTimer},
     { "setNameCombo", _wrap_Ai_setNameCombo},
     { "setText", _wrap_Ai_setText},
-    { "animateSend", _wrap_Ai_animateSend},
+    { "sendPress", _wrap_Ai_sendPress},
+    { "sendRelease", _wrap_Ai_sendRelease},
+    { "sendClick", _wrap_Ai_sendClick},
     { "getFirstChar", _wrap_Ai_getFirstChar},
     { "removeFirstChar", _wrap_Ai_removeFirstChar},
     { "debugOutput", _wrap_Ai_debugOutput},

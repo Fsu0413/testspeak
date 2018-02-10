@@ -46,7 +46,9 @@ public:
     void killTimer(int timerId);
     bool setNameCombo(const QString &name);
     void setText(const QString &text);
-    void animateSend(int timeout);
+    void sendPress();
+    void sendRelease();
+    void sendClick();
     QString getFirstChar(const QString &c);
     QString removeFirstChar(const QString &c);
     void debugOutput(const QString &c);

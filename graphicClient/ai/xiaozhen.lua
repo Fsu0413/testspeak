@@ -1,14 +1,8 @@
 
 data = {
-	["speakingTo"] = "",
-	["groupSpoken"] = {},
-	["spokenToMe"] = {},
-	
-	["lastSent"] = "",
-	["lastRecv"] = "",
-	
-	["timeoutTime"] = 0,
-	
+	["recvList"] = {},
+	["lastSent"] = {},
+
 	["sendingStep"] = 0,
 	["sending"] = "",
 	["typed"] = "",
@@ -19,18 +13,12 @@ data = {
 }
 
 consts = {
-	["findPersonTimerId"] = 1,
-	["findPersonTimeout"] = 200000,
-	
-	["timeoutTimerId"] = 2,
-	["timeoutTimeout"] = 300000,
-	
 	["operationTimerId"] = 3,
 	
-	["thinkdelay"] = 6000,
+	["thinkdelay"] = 1000,
 	["clickDelay"] = 200,
-	["typeDelay"] = 300,
-	["sendDelay"] = 3000,
+	["typeDelay"] = 100,
+	["sendDelay"] = 1500,
 }
 
 base = {
@@ -44,10 +32,9 @@ base = {
 		"噫"
 	},
 	["greet"] = {
-		"在吗",
+		"打扰了，我是__AIREPLACE__，你有时间么",
 		"你好，我是__AIREPLACE__",
-		"hello",
-		"hi"
+		"我是__AIREPLACE__，有点事特地找你聊聊",
 	},
 	["parrotdup"] = {
 		"学我说话有意思么。。。。",
@@ -58,27 +45,6 @@ base = {
 		"你是在自言自语吗？",
 		"重要的事情不用说三遍啦。",
 		"复读机，鉴定完毕。"
-	},
-	["gmale"] = {
-		"本人性别男，爱好女，慢走不送"
-	},
-	["gfemale"] = {
-		"我妈催我找对象，我着急找男性聊天，不好意思啦"
-	},
-	["findperson"] = {
-		"无聊",
-		"来个人陪陪我，否则我难受"
-	},
-	["timeout1"] = {
-		"在想啥呢。。。",
-		"嘿，醒醒"
-	},
-	["timeout2"] = {
-		"掉线了么",
-		"咋了，不理我了？"
-	},
-	["timeout3"] = {
-		"看来真掉线了。我去找别人聊啦"
 	}
 }
 
@@ -157,54 +123,58 @@ getStringFromBase = function(baseName)
 	return base[baseName][math.random(1, #(base[baseName]))];
 end
 
-findPerson = function()
-	me:debugOutput("findPerson")
-	if data.speakingTo == "" then
-		sendTo(nil, getStringFromBase("findperson"))
-	end
-	me:addTimer(consts.findPersonTimerId, generateRandom(consts.findPersonTimeout))
+send = function(from, content)
+	me:debugOutput("send" .. from .. content)
+	data.lastSent[from] = content
+	sendTo(from, content)
 end
 
-send = function(content)
-	me:debugOutput("send" .. content)
-	if data.speakingTo ~= "" then
-		data.lastSent = content
-		sendTo(data.speakingTo, content)
-		me:addTimer(consts.timeoutTimerId, generateRandom(consts.timeoutTimeout))
-	end
-end
-
-analyzeContent = function()
-	if data.lastRecv == data.lastSent then
-		send(getStringFromBase("parrotdup"))
+analyzeContent = function(from)
+	if data.recvList[from][#(data.recvList[from])] == data.lastSent[from] then
+		send(from, getStringFromBase("parrotdup"))
 		return
 	end
-	me:debugOutput("data.queryTl" .. data.speakingTo .. data.lastRecv)
-	me:queryTl(data.speakingTo, data.lastRecv)
+	me:debugOutput("data.queryTl" .. from .. data.recvList[from][#(data.recvList[from])])
+	me:queryTl(from, data.recvList[from][#(data.recvList[from])])
 end
 
-talk = function(content)
-	me:killTimer(consts.timeoutTimerId)
-	data.timeoutTime = 0
-	if content == data.lastRecv then
-		send(getStringFromBase("recvdup"))
-	else
-		data.lastRecv = content
-		analyzeContent()
+talk = function(from, content)
+	if not data.recvList[from] then
+		data.recvList[from] = {}
 	end
+	
+	table.insert(data.recvList[from], content)
+	if #(data.recvList[from]) > 3 then
+		table.remove(data.recvList[from], 1)
+	end
+	
+	if #(data.recvList[from]) == 3 then
+		local allequal = true;
+		local first
+		for _, i in ipairs(data.recvList[from]) do
+			if not first then
+				first = i
+			elseif first ~= i then
+				allequal = false
+				break
+			end
+		end
+		if allequal then return end
+	end
+	
+	analyzeContent(from)
 end
 
 addPlayer = function(name)
-
+	local x = getStringFromBase("greet")
+	x = string.gsub(x, "__AIREPLACE__", me:name())
+	send(name, x)
 end
 
 removePlayer = function(name)
 	me:debugOutput("removePlayer"..name)
-	if data.speakingTo == name then
-		data.speakingTo = ""
-		me:killTimer(consts.timeoutTimerId)
-		data.timeoutTime = 0
-	end
+	data.recvList[name] = nil
+	data.lastSent[name] = nil
 	
 	if data.sendingTo == name then
 		data.sending = ""
@@ -226,62 +196,19 @@ removePlayer = function(name)
 end
 
 playerDetail = function(obname, obgender)
-	me:debugOutput("playerDetail"..obname..obgender)
-	if (data.spokenToMe[obname] ~= nil) and (data.speakingTo == "") then
-		if (me:gender() ~= obgender) then
-			data.speakingTo = obname
-			talk(data.spokenToMe[obname])
-			data.spokenToMe = {}
-			data.groupSpoken = {}
-		else
-			sendTo(obname, getStringFromBase("g" .. me:gender()))
-			data.spokenToMe[obname] = nil
-		end
-	else
-		for _, n in ipairs(data.groupSpoken) do
-			if (n == obname) and (data.speakingTo == "") then
-				if (me:gender() ~= obgender) then
-					local sending = getStringFromBase("greet")
-					sending = string.gsub(sending, "__AIREPLACE__", me:name())
-					sendTo(obname, sending)
-				else
-					table.remove(data.groupSpoken, _)
-					break
-				end
-			end
-		end
-	end
+
 end
 
 playerSpoken = function(from, to, content, fromYou, toYou, groupsent)
 	me:debugOutput("playerSpoken"..from..to..content)
 	if fromYou then return end
-	
-	if groupsent and (data.speakingTo == "") then
-		local flag = false
-		for _, n in ipairs(data.groupSpoken) do
-			if n == from then
-				flag = true
-				break
-			end
-		end
-		if not flag then
-			table.insert(data.groupSpoken, from)
-		end
-		me:queryPlayer(from)
-	end
-	
-	if toYou and (data.speakingTo == "") then
-		data.spokenToMe[from] = content
-		me:queryPlayer(from)
-	end
-	
-	if toYou and (from == data.speakingTo) then
-		talk(content)
+
+	if toYou then
+		talk(from, content)
 	end
 end
 
-tlReceive = function(value, sending)
+tlReceive = function(value, sending, from)
 	me:debugOutput("tlReceive" .. value .. sending)
 	local toSend = ""
 	if (value == 100000) or (value == 40002) then
@@ -300,26 +227,13 @@ tlReceive = function(value, sending)
 		toSend = getStringFromBase("change")
 	end
 	
-	send(toSend)
+	send(from, toSend)
 end
 
 timeout = function(timerid)
-	if timerid == consts.findPersonTimerId then
-		me:debugOutput("findPersonTimerId")
-		findPerson()
-	elseif timerid == consts.timeoutTimerId then
-		data.timeoutTime = data.timeoutTime + 1
-		local sending = getStringFromBase("timeout" .. tostring(data.timeoutTime))
-		send(sending)
-		
-		if data.timeoutTime >= 3 then
-			data.speakingTo = ""
-			me:killTimer(consts.timeoutTimerId)
-		end
-	elseif (timerid == consts.operationTimerId) then
+	if (timerid == consts.operationTimerId) then
 		sendingstep()
 	end
 end
 
-me:addTimer(consts.findPersonTimerId, 2000)
 me:addTimer(consts.operationTimerId, 100)

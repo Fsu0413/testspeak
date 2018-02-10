@@ -3,6 +3,7 @@
 #include "client.h"
 #include "dialog.h"
 #include "lua.hpp"
+#include <QApplication>
 #include <QComboBox>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -96,6 +97,7 @@ void Ai::queryTl(const QString &id, const QString &content)
     req.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
 
     QNetworkReply *reply = nam1->post(req, doc.toJson());
+    reply->setProperty("from", id);
     connect(reply, &QNetworkReply::finished, this, &Ai::receive);
 }
 
@@ -142,9 +144,22 @@ void Ai::setText(const QString &text)
     dialog->edit->setCursorPosition(text.length());
 }
 
-void Ai::animateSend(int timeout)
+void Ai::sendPress()
 {
-    dialog->sendbtn->animateClick(timeout);
+    dialog->sendbtn->setFocus();
+    dialog->sendbtn->setDown(true);
+}
+
+void Ai::sendRelease()
+{
+    dialog->sendbtn->setFocus();
+    dialog->sendbtn->setDown(false);
+}
+
+void Ai::sendClick()
+{
+    dialog->sendbtn->setDown(false);
+    dialog->sendbtn->click();
 }
 
 QString Ai::getFirstChar(const QString &c)
@@ -207,6 +222,7 @@ void Ai::receive()
         return;
 
     QByteArray arr = reply->readAll();
+    QString from = reply->property("from").toString();
     reply->deleteLater();
 
     QJsonDocument doc = QJsonDocument::fromJson(arr);
@@ -218,7 +234,8 @@ void Ai::receive()
     lua_getglobal(l, "tlReceive");
     lua_pushinteger(l, value);
     lua_pushstring(l, sending.toUtf8().constData());
-    pcall(2);
+    lua_pushstring(l, from.toUtf8().constData());
+    pcall(3);
 }
 
 void Ai::timeout()
