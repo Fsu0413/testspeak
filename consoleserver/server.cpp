@@ -1,5 +1,6 @@
 #include "server.h"
 #include <QCoreApplication>
+#include <QDateTime>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -127,6 +128,7 @@ public:
 
         auto copy = content;
         copy[QStringLiteral("protocolValue")] = int(CP_Spoken);
+        copy[QStringLiteral("time")] = QDateTime::currentDateTime().toTime_t();
 
         QJsonDocument doc(copy);
         foreach (QTcpSocket *to, tos)
