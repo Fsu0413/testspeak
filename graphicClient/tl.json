@@ -4,17 +4,13 @@
 		"key": "7ada11095ad24a499cd253be48574b0e",
 		"gender": "female",
 		"aiFile": "ai/legacyAi.lua",
-		"age": 19,
-		"zodiac": "taurus",
 		"comments": "游戏 休闲娱乐"
 	},
 	{
 		"name": "老游",
 		"key": "ca88160bfc26416c8e8b56f228c936a7",
 		"gender": "male",
-		"aiFile": "ai/legacyAi.lua",
-		"age": 25,
-		"zodiac": "libra",
+		"aiFile": "ai/legacyAiNoGender.lua",
 		"comments": "游戏 游戏互动"
 	},
 	{
@@ -22,8 +18,6 @@
 		"key": "d4780ff86912451d9ff57d61c4d1354e",
 		"gender": "female",
 		"aiFile": "ai/legacyAiNoGender.lua",
-		"age": 12,
-		"zodiac": "virgo",
 		"comments": "游戏 虚拟伴侣"
 	},
 	{
@@ -31,28 +25,23 @@
 		"key": "fb2b452347644bf1a659b8f0371afb4b",
 		"gender": "female",
 		"aiFile": "ai/xiaozhen.lua",
-		"age": 17,
-		"zodiac": "aquarius",
 		"comments": "社交社群 聊天倾诉"
 	},
 	{
 		"name": "老宠",
 		"key": "9490ce0529be4f8bad25174727411d5f",
 		"gender": "male",
-		"age": 20,
-		"zodiac": "aries",
 		"comments": "社交社群 虚拟宠物"
 	},
 	{
 		"name": "老裴",
 		"key": "c75f179984b24a5cbfb4931cf285b8bf",
+		"aiFile": "ai/legacyAi.lua",
 		"gender": "male",
-		"age": 18,
 		"comments": "社交社群 虚拟陪聊"
 	},
 	{
 		"name": "帅帅",
 		"gender": "male",
-		"age": 26
 	}
 ]

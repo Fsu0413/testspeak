@@ -27,10 +27,13 @@ consts = {
 	
 	["operationTimerId"] = 3,
 	
-	["thinkdelay"] = 6000,
+	["outoftimeTimerId"] = 4,
+	["outoftimeTimeout"] = 100000,
+	
+	["thinkdelay"] = 3000,
 	["clickDelay"] = 200,
-	["typeDelay"] = 300,
-	["sendDelay"] = 3000,
+	["typeDelay"] = 100,
+	["sendDelay"] = 1500,
 }
 
 base = {
@@ -79,7 +82,11 @@ base = {
 	},
 	["timeout3"] = {
 		"看来真掉线了。我去找别人聊啦"
-	}
+	},
+	["outoftime"] = {
+		"今天说了太多，次数用完啦。。。不得不下线了，明天继续！",
+		"不好意思，没时间啦，明天有时间再聊~下线了，88~"
+	},
 }
 
 generateRandom = function(rand)
@@ -291,7 +298,11 @@ tlReceive = function(value, sending)
 			toSend = getStringFromBase("senddup")
 		end
 	elseif value == 40004 then
-		return
+		toSend = getStringFromBase("outoftime")
+		if not data.outoftimeRegistered then
+			me:addTimer(consts.outoftimeTimerId, consts.outoftimeTimeout)
+			data.outoftimeRegistered = true
+		end
 	else
 		-- how to qDebug()????
 	end
@@ -318,6 +329,8 @@ timeout = function(timerid)
 		end
 	elseif (timerid == consts.operationTimerId) then
 		sendingstep()
+	elseif (timerid == consts.outoftimeTimerId) then
+		me:prepareExit()
 	end
 end
 

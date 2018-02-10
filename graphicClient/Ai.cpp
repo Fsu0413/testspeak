@@ -177,6 +177,11 @@ void Ai::debugOutput(const QString &c)
     qDebug() << c;
 }
 
+void Ai::prepareExit()
+{
+    qApp->exit();
+}
+
 void Ai::addPlayer(QString name)
 {
     lua_getglobal(l, "addPlayer");

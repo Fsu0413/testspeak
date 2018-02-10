@@ -52,6 +52,7 @@ public:
     QString getFirstChar(const QString &c);
     QString removeFirstChar(const QString &c);
     void debugOutput(const QString &c);
+    void prepareExit();
 
 public slots:
     void addPlayer(QString name);

@@ -3305,6 +3305,29 @@ fail:
 }
 
 
+static int _wrap_Ai_prepareExit(lua_State* L) {
+  int SWIG_arg = 0;
+  Ai *arg1 = (Ai *) 0 ;
+  
+  SWIG_check_num_args("Ai::prepareExit",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::prepareExit",1,"Ai *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
+    SWIG_fail_ptr("Ai_prepareExit",1,SWIGTYPE_p_Ai);
+  }
+  
+  (arg1)->prepareExit();
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static void swig_delete_Ai(void *obj) {
 Ai *arg1 = (Ai *) obj;
 delete arg1;
@@ -3335,6 +3358,7 @@ static swig_lua_method swig_Ai_methods[]= {
     { "getFirstChar", _wrap_Ai_getFirstChar},
     { "removeFirstChar", _wrap_Ai_removeFirstChar},
     { "debugOutput", _wrap_Ai_debugOutput},
+    { "prepareExit", _wrap_Ai_prepareExit},
     {0,0}
 };
 static swig_lua_method swig_Ai_meta[] = {
