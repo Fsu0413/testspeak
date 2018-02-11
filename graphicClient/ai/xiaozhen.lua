@@ -28,13 +28,17 @@ consts = {
 
 base = {
 	["senddup"] = {
-		"感觉自己有点啰嗦了呢～",
-		"好像不知道说点什么好了。。。",
-		"我要开始复读机模式了"
+		"考考你，我叫什么来着？",
+		"我多大了？",
+		"还记得我是男生还是女生么？"
 	},
-	["change"] = {
-		"我靠，你能不能说点我能听得懂的",
-		"噫"
+	["changemale"] = {
+		"顺便跟你说说，俺是大帅哥！",
+		"稍微向你透露下，我是男生",
+	},
+	["changefemale"] = {
+		"偷偷的告诉你，信不信我是大美女哦~",
+		"我是女生，对我说话要温柔些~",
 	},
 	["greet"] = {
 		"打扰了，我是__AIREPLACE__，你有时间么",
@@ -42,9 +46,9 @@ base = {
 		"我是__AIREPLACE__，有点事特地找你聊聊",
 	},
 	["parrotdup"] = {
-		"学我说话有意思么。。。。",
-		"我可能在和鹦鹉说话",
-		"就这个事，不用重复啦！"
+		"你叫什么来着？",
+		"你多大了？",
+		"你是男生还是女生啊？"
 	},
 	["recvdup"] = {
 		"你是在自言自语吗？",
@@ -248,7 +252,7 @@ tlReceive = function(value, sending, from)
 	end
 
 	if (toSend == "") then
-		toSend = getStringFromBase("change")
+		toSend = getStringFromBase("change" .. me:gender())
 	end
 
 	send(from, toSend)
