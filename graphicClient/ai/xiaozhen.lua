@@ -2,22 +2,24 @@
 data = {
 	["recvList"] = {},
 	["lastSent"] = {},
+	["recvTime"] = {},
+	["sentTime"] = {},
 
 	["sendingStep"] = 0,
 	["sending"] = "",
 	["typed"] = "",
 	["sendingTo"] = "",
-	
+
 	["tosend"] = {},
 	["sendpressed"] = false,
 }
 
 consts = {
 	["operationTimerId"] = 3,
-	
+
 	["outoftimeTimerId"] = 4,
 	["outoftimeTimeout"] = 100000,
-	
+
 	["thinkdelay"] = 500,
 	["clickDelay"] = 200,
 	["typeDelay"] = 100,
@@ -65,7 +67,7 @@ sendingstep = function()
 	if (data.sendingStep ~= 5) and data.sendpressed then
 		me:sendRelease()
 	end
-	
+
 	if data.sendingStep == 0 then
 		if #data.tosend ~= 0 then
 			local tosend = data.tosend[1]
@@ -105,23 +107,23 @@ sendingstep = function()
 		data.sendingStep = 0
 		timer = consts.thinkdelay
 	end
-	
+
 	if timer ~= 1 then
 		timer = generateRandom(timer)
 	end
-	
+
 	me:addTimer(consts.operationTimerId, timer)
 end
 
 sendTo = function(to, content)
 	if not to then to = "all" end
 	me:debugOutput("sendTo".. to .. content)
-	
+
 	local tosend = {
 		["to"] = to,
 		["content"] = content
 	}
-	
+
 	table.insert(data.tosend, tosend)
 end
 
@@ -149,12 +151,16 @@ talk = function(from, content)
 	if not data.recvList[from] then
 		data.recvList[from] = {}
 	end
-	
+
 	table.insert(data.recvList[from], content)
 	if #(data.recvList[from]) > 3 then
 		table.remove(data.recvList[from], 1)
 	end
-	
+
+	if data.recvTime[from] - data.sentTime[from] < 2 then
+		return
+	end
+
 	if #(data.recvList[from]) == 3 then
 		local allequal = true;
 		local first
@@ -168,7 +174,7 @@ talk = function(from, content)
 		end
 		if allequal then return end
 	end
-	
+
 	analyzeContent(from)
 end
 
@@ -182,13 +188,15 @@ removePlayer = function(name)
 	me:debugOutput("removePlayer"..name)
 	data.recvList[name] = nil
 	data.lastSent[name] = nil
-	
+	data.sentTime[name] = nil
+	data.recvTime[name] = nil
+
 	if data.sendingTo == name then
 		data.sending = ""
 		data.sendingTo = ""
 		data.sendingStep = 0
 	end
-	
+
 	local flag = false
 	while not flag do
 		flag = true
@@ -206,11 +214,16 @@ playerDetail = function(obname, obgender)
 
 end
 
-playerSpoken = function(from, to, content, fromYou, toYou, groupsent)
+playerSpoken = function(from, to, content, fromYou, toYou, groupsent, senttime)
 	me:debugOutput("playerSpoken"..from..to..content)
-	if fromYou then return end
+
+	if fromYou then
+		data.sentTime[to] = senttime
+		return
+	end
 
 	if toYou then
+		data.recvTime[from] = senttime
 		talk(from, content)
 	end
 end
@@ -233,11 +246,11 @@ tlReceive = function(value, sending, from)
 	else
 		-- how to qDebug()????
 	end
-	
+
 	if (toSend == "") then
 		toSend = getStringFromBase("change")
 	end
-	
+
 	send(from, toSend)
 end
 

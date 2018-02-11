@@ -31,6 +31,7 @@
 		"name": "老宠",
 		"key": "9490ce0529be4f8bad25174727411d5f",
 		"gender": "male",
+		"aiFile": "ai/xiaozhen.lua",
 		"comments": "社交社群 虚拟宠物"
 	},
 	{
@@ -50,5 +51,12 @@
 		"key": "637112039c3b4c169efdd08bc1881bf9",
 		"comments": "社交社群 聊天调侃",
 		"aiFile": "ai/xiaofang.lua"
+	},
+	{
+		"name": "小于",
+		"key": "674ed594dd8f4c54b5a21f95e17200c7",
+		"gender": "female",
+		"aiFile": "ai/xiaofang.lua",
+		"comments": "社交社群 休闲娱乐"
 	}
 ]

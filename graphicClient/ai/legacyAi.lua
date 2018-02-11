@@ -3,19 +3,19 @@ data = {
 	["speakingTo"] = "",
 	["groupSpoken"] = {},
 	["spokenToMe"] = {},
-	
+
 	["lastSent"] = "",
 	["lastRecv"] = "",
-	
+
 	["outoftimeRegistered"] = false,
-	
+
 	["timeoutTime"] = 0,
-	
+
 	["sendingStep"] = 0,
 	["sending"] = "",
 	["typed"] = "",
 	["sendingTo"] = "",
-	
+
 	["tosend"] = {},
 	["sendpressed"] = false,
 }
@@ -23,16 +23,16 @@ data = {
 consts = {
 	["findPersonTimerId"] = 1,
 	["findPersonTimeout"] = 200000,
-	
+
 	["timeoutTimerId"] = 2,
 	["timeoutTimeout"] = 300000,
-	
+
 	["operationTimerId"] = 3,
-	
+
 	["outoftimeTimerId"] = 4,
 	["outoftimeTimeout"] = 100000,
-	
-	["thinkdelay"] = 3000,
+
+	["thinkdelay"] = 500,
 	["clickDelay"] = 200,
 	["typeDelay"] = 100,
 	["sendDelay"] = 1500,
@@ -101,7 +101,7 @@ sendingstep = function()
 	if (data.sendingStep ~= 5) and data.sendpressed then
 		me:sendRelease()
 	end
-	
+
 	if data.sendingStep == 0 then
 		if #data.tosend ~= 0 then
 			local tosend = data.tosend[1]
@@ -141,23 +141,23 @@ sendingstep = function()
 		data.sendingStep = 0
 		timer = consts.thinkdelay
 	end
-	
+
 	if timer ~= 1 then
 		timer = generateRandom(timer)
 	end
-	
+
 	me:addTimer(consts.operationTimerId, timer)
 end
 
 sendTo = function(to, content)
 	if not to then to = "all" end
 	me:debugOutput("sendTo".. to .. content)
-	
+
 	local tosend = {
 		["to"] = to,
 		["content"] = content
 	}
-	
+
 	table.insert(data.tosend, tosend)
 end
 
@@ -214,13 +214,13 @@ removePlayer = function(name)
 		me:killTimer(consts.timeoutTimerId)
 		data.timeoutTime = 0
 	end
-	
+
 	if data.sendingTo == name then
 		data.sending = ""
 		data.sendingTo = ""
 		data.sendingStep = 0
 	end
-	
+
 	local flag = false
 	while not flag do
 		flag = true
@@ -265,7 +265,7 @@ end
 playerSpoken = function(from, to, content, fromYou, toYou, groupsent)
 	me:debugOutput("playerSpoken"..from..to..content)
 	if fromYou then return end
-	
+
 	if groupsent and (data.speakingTo == "") then
 		local flag = false
 		for _, n in ipairs(data.groupSpoken) do
@@ -279,12 +279,12 @@ playerSpoken = function(from, to, content, fromYou, toYou, groupsent)
 		end
 		me:queryPlayer(from)
 	end
-	
+
 	if toYou and (data.speakingTo == "") then
 		data.spokenToMe[from] = content
 		me:queryPlayer(from)
 	end
-	
+
 	if toYou and (from == data.speakingTo) then
 		talk(content)
 	end
@@ -308,11 +308,11 @@ tlReceive = function(value, sending)
 	else
 		-- how to qDebug()????
 	end
-	
+
 	if (toSend == "") then
 		toSend = getStringFromBase("change")
 	end
-	
+
 	send(toSend)
 end
 
@@ -324,7 +324,7 @@ timeout = function(timerid)
 		data.timeoutTime = data.timeoutTime + 1
 		local sending = getStringFromBase("timeout" .. tostring(data.timeoutTime))
 		send(sending)
-		
+
 		if data.timeoutTime >= 3 then
 			data.speakingTo = ""
 			me:killTimer(consts.timeoutTimerId)
