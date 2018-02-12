@@ -79,7 +79,7 @@ public:
         foreach (QTcpSocket *to, nameSocketMap)
             writeJsonDocument(to, doc);
 
-        QString name = content.value("name").toString();
+        QString name = content.value("userName").toString();
         nameSocketMap[name] = socket;
 
         qDebug() << socket->peerAddress().toString() << "," << socket->peerPort() << "registered as" << name;
@@ -88,7 +88,7 @@ public:
     void queryFunc(QTcpSocket *socket, const QJsonObject &content)
     {
         QJsonObject ret;
-        if (!content.contains("name")) {
+        if (!content.contains("userName")) {
             qDebug() << socket->peerAddress().toString() << "," << socket->peerPort() << "is querying all";
             QJsonArray arr;
             foreach (const QString &name, nameSocketMap.keys())
@@ -96,7 +96,7 @@ public:
 
             ret[QStringLiteral("res")] = arr;
         } else {
-            QString name = content.value("name").toString();
+            QString name = content.value("userName").toString();
             qDebug() << socket->peerAddress().toString() << "," << socket->peerPort() << "is querying" << name;
             if (nameSocketMap.contains(name)) {
                 QTcpSocket *socket = nameSocketMap.value(name);
@@ -171,13 +171,13 @@ public slots:
         QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
         if (socket != nullptr) {
             qDebug() << socket->peerAddress().toString() << "," << socket->peerPort() << "disconnected.";
-            QString name = socketTlMap[socket].value(QStringLiteral("name")).toString();
+            QString name = socketTlMap[socket].value(QStringLiteral("userName")).toString();
             socketTlMap.remove(socket);
             nameSocketMap.remove(name);
 
             QJsonObject ob;
             ob["protocolValue"] = int(CP_SignedOut);
-            ob["name"] = name;
+            ob["userName"] = name;
 
             QJsonDocument doc(ob);
 

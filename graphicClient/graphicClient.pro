@@ -91,7 +91,14 @@ HEADERS += \
 
 INCLUDEPATH += $$_PRO_FILE_PWD_/lua
 
-android:DEFINES += "\"getlocaledecpoint()='.'\""
+android {
+    DEFINES += "\"getlocaledecpoint()='.'\"" LUA_USE_POSIX
+}
+
+macos {
+    DEFINES += LUA_USE_MACOSX
+    LIBS += -lreadline
+}
 
 ANDROID_PACKAGE_SOURCE_DIR = $$_PRO_FILE_PWD_/android
 
