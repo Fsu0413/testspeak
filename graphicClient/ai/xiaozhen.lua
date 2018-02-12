@@ -4,6 +4,10 @@ data = {
 	["lastSent"] = {},
 	["recvTime"] = {},
 	["sentTime"] = {},
+	
+	["outoftime"] = false,
+	["outoftimeDay"] = 0,
+	["outoftimeKnown"] = {},
 
 	["sendingStep"] = 0,
 	["sending"] = "",
@@ -18,7 +22,7 @@ consts = {
 	["operationTimerId"] = 3,
 
 	["outoftimeTimerId"] = 4,
-	["outoftimeTimeout"] = 100000,
+	["outoftimeTimeout"] = 60000,
 
 	["thinkdelay"] = 500,
 	["clickDelay"] = 200,
@@ -58,6 +62,10 @@ base = {
 	["outoftime"] = {
 		"今天说了太多，次数用完啦。。。不得不下线了，明天继续！",
 		"不好意思，没时间啦，明天有时间再聊~下线了，88~"
+	},
+	["revive"] = {
+		"又是崭新的一天~有没有啥想跟我说说的？",
+		"再次打扰啦，有时间吗~",
 	},
 }
 
@@ -225,6 +233,12 @@ playerSpoken = function(from, to, content, fromYou, toYou, groupsent, senttime)
 		data.sentTime[to] = senttime
 		return
 	end
+	
+	for _, i in ipairs(data.outoftimeKnown) do
+		if i == from then
+			return
+		end
+	end
 
 	if toYou then
 		data.recvTime[from] = senttime
@@ -243,10 +257,19 @@ tlReceive = function(value, sending, from)
 		end
 	elseif value == 40004 then
 		toSend = getStringFromBase("outoftime")
-		if not data.outoftimeRegistered then
+		if not data.outoftime then
+			data.outoftimeDay = os.date("*t").day
 			me:addTimer(consts.outoftimeTimerId, consts.outoftimeTimeout)
-			data.outoftimeRegistered = true
+			data.outoftime = true
 		end
+		
+		local contains = false
+		for _, i in ipairs(data.outoftimeKnown) do
+			if i == from then
+				return
+			end
+		end
+		table.insert(data.outoftimeKnown, from)
 	else
 		-- how to qDebug()????
 	end
@@ -262,7 +285,32 @@ timeout = function(timerid)
 	if (timerid == consts.operationTimerId) then
 		sendingstep()
 	elseif (timerid == consts.outoftimeTimerId) then
-		me:prepareExit()
+		local dt = os.date("*t")
+		local revive = false
+		if (dt.day == 1) or (dt.day > data.outoftimeDay) then
+			if dt.hour >= 1 then
+				revive = true
+			elseif dt.minute > 55 then
+				revive = true
+			elseif dt.minute > 5 then
+				revive = (math.random(10) == 1)
+			end
+		end
+
+		if revive then
+			data.outoftime = false
+			data.outoftimeDay = 0
+			data.outoftimeKnown = {}
+			if data.speakingTo ~= "" then
+				for n, _ in ipairs(data.lastSent) do
+					if _ then
+						send(n, getStringFromBase("revive"))
+					end
+				end
+			end
+		else
+			me:addTimer(consts.outoftimeTimerId, consts.outoftimeTimeout)
+		end
 	end
 end
 

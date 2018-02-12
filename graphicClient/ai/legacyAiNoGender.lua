@@ -10,6 +10,10 @@ data = {
 	["lastSent"] = "",
 	["lastRecv"] = "",
 
+	["outoftime"] = false,
+	["outoftimeDay"] = 0,
+	["outoftimeKnown"] = {},
+
 	["timeoutTime"] = 0,
 
 	["sendingStep"] = 0,
@@ -31,7 +35,7 @@ consts = {
 	["operationTimerId"] = 3,
 
 	["outoftimeTimerId"] = 4,
-	["outoftimeTimeout"] = 100000,
+	["outoftimeTimeout"] = 60000,
 
 	["thinkdelay"] = 500,
 	["clickDelay"] = 200,
@@ -89,6 +93,10 @@ base = {
 	["outoftime"] = {
 		"今天说了太多，次数用完啦。。。不得不下线了，明天继续！",
 		"不好意思，没时间啦，明天有时间再聊~下线了，88~"
+	},
+	["revive"] = {
+		"我回来啦，有没有想我呢？",
+		"嗨，我现在有时间啦，来聊两句？",
 	},
 }
 
@@ -169,7 +177,7 @@ end
 
 findPerson = function()
 	me:debugOutput("findPerson")
-	if data.speakingTo == "" then
+	if (data.speakingTo == "") and (not data.outoftime) then
 		sendTo(nil, getStringFromBase("findperson"))
 	end
 	me:addTimer(consts.findPersonTimerId, generateRandom(consts.findPersonTimeout))
@@ -180,7 +188,9 @@ send = function(content)
 	if data.speakingTo ~= "" then
 		data.lastSent = content
 		sendTo(data.speakingTo, content)
-		me:addTimer(consts.timeoutTimerId, generateRandom(consts.timeoutTimeout))
+		if not data.outoftime then
+			me:addTimer(consts.timeoutTimerId, generateRandom(consts.timeoutTimeout))
+		end
 	end
 end
 
@@ -293,6 +303,12 @@ playerSpoken = function(from, to, content, fromYou, toYou, groupsent)
 		end
 	end
 
+	for _, i in ipairs(data.outoftimeKnown) do
+		if i == from then
+			return
+		end
+	end
+
 	if groupsent and (data.speakingTo == "") then
 		local flag = false
 		for _, n in ipairs(data.groupSpoken) do
@@ -317,7 +333,7 @@ playerSpoken = function(from, to, content, fromYou, toYou, groupsent)
 	end
 end
 
-tlReceive = function(value, sending)
+tlReceive = function(value, sending, from)
 	me:debugOutput("tlReceive" .. value .. sending)
 	local toSend = ""
 	if (value == 100000) or (value == 40002) then
@@ -328,10 +344,19 @@ tlReceive = function(value, sending)
 		end
 	elseif value == 40004 then
 		toSend = getStringFromBase("outoftime")
-		if not data.outoftimeRegistered then
+		if not data.outoftime then
+			data.outoftimeDay = os.date("*t").day
 			me:addTimer(consts.outoftimeTimerId, consts.outoftimeTimeout)
-			data.outoftimeRegistered = true
+			data.outoftime = true
 		end
+
+		local contains = false
+		for _, i in ipairs(data.outoftimeKnown) do
+			if i == from then
+				return
+			end
+		end
+		table.insert(data.outoftimeKnown, from)
 	else
 		-- how to qDebug()????
 	end
@@ -359,7 +384,28 @@ timeout = function(timerid)
 	elseif (timerid == consts.operationTimerId) then
 		sendingstep()
 	elseif (timerid == consts.outoftimeTimerId) then
-		me:prepareExit()
+		local dt = os.date("*t")
+		local revive = false
+		if (dt.day == 1) or (dt.day > data.outoftimeDay) then
+			if dt.hour >= 1 then
+				revive = true
+			elseif dt.minute > 55 then
+				revive = true
+			elseif dt.minute > 5 then
+				revive = (math.random(10) == 1)
+			end
+		end
+
+		if revive then
+			data.outoftime = false
+			data.outoftimeDay = 0
+			data.outoftimeKnown = {}
+			if data.speakingTo ~= "" then
+				send(getStringFromBase("revive"))
+			end
+		else
+			me:addTimer(consts.outoftimeTimerId, consts.outoftimeTimeout)
+		end
 	end
 end
 
