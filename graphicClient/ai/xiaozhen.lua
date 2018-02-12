@@ -314,4 +314,5 @@ timeout = function(timerid)
 	end
 end
 
+math.randomseed(os.time())
 me:addTimer(consts.operationTimerId, 100)
