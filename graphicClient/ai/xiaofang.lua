@@ -56,7 +56,7 @@ base = {
 	},
 	["greetfemale"] = {
 		"我是__AIREPLACE__，看你有点无聊，我来陪你好了",
-		"我。。我。。我叫__AIREPLACE__，我我我我。。。",
+		"这么无聊，怕不是有什么心事？",
 	},
 	["greetmale"] = {
 		"俺是__AIREPLACE__，想俺了么？",

@@ -1,5 +1,8 @@
 
 data = {
+	["repeatTime"] = 0,
+	["banned"] = {},
+
 	["speakingTo"] = "",
 	["groupSpoken"] = {},
 	["spokenToMe"] = {},
@@ -195,7 +198,15 @@ talk = function(content)
 	data.timeoutTime = 0
 	if content == data.lastRecv then
 		send(getStringFromBase("recvdup"))
+		data.repeatTime = data.repeatTime + 1
+		if data.repeatTime == 5 then
+			table.insert(data.banned, data.speakingTo)
+			data.speakingTo = ""
+			me:killTimer(consts.timeoutTimerId)
+			data.timeoutTime = 0
+		end
 	else
+		data.repeatTime = 0
 		data.lastRecv = content
 		analyzeContent()
 	end
@@ -225,6 +236,18 @@ removePlayer = function(name)
 		for _, i in ipairs(data.tosend) do
 			if i.to == name then
 				table.remove(data.tosend, _)
+				flag = false
+				break
+			end
+		end
+	end
+
+	flag = false
+	while not flag do
+		flag = true
+		for _, i in ipairs(data.banned) do
+			if i == name then
+				table.remove(data.banned, _)
 				flag = false
 				break
 			end
@@ -263,6 +286,12 @@ end
 playerSpoken = function(from, to, content, fromYou, toYou, groupsent)
 	me:debugOutput("playerSpoken"..from..to..content)
 	if fromYou then return end
+
+	for _, i in ipairs(data.banned) do
+		if i == from then
+			return
+		end
+	end
 
 	if groupsent and (data.speakingTo == "") then
 		local flag = false
