@@ -7,47 +7,65 @@ data = {
 	["sending"] = "",
 	["typed"] = "",
 	["sendingTo"] = "",
-	
+
 	["tosend"] = {},
 	["sendpressed"] = false,
 }
 
 consts = {
 	["operationTimerId"] = 3,
-	
+
 	["outoftimeTimerId"] = 4,
 	["outoftimeTimeout"] = 100000,
-	
+
 	["thinkdelay"] = 500,
 	["clickDelay"] = 200,
 	["typeDelay"] = 100,
 	["sendDelay"] = 1500,
+
+	["boringKey"] = {
+		"无聊",
+		"难受",
+		"寂寞",
+		"一个人",
+		"聊天",
+		"撩",
+		"尬"
+	},
+
 }
 
 base = {
 	["senddup"] = {
-		"感觉自己有点啰嗦了呢～",
-		"好像不知道说点什么好了。。。",
-		"我要开始复读机模式了"
+		"考考你，我叫什么来着？",
+		"我多大了？",
+		"还记得我是男生还是女生么？"
 	},
-	["change"] = {
-		"我靠，你能不能说点我能听得懂的",
-		"噫"
+	["changemale"] = {
+		"顺便跟你说说，俺是大帅哥！",
+		"稍微向你透露下，我是男生",
+	},
+	["changefemale"] = {
+		"偷偷的告诉你，信不信我是大美女哦~",
+		"我是女生，对我说话要温柔些~",
 	},
 	["callme"] = {
 		"叫我吗？",
 		"你在找我么",
 		"需不需要我给你排忧解难？",
 	},
-	["greet"] = {
-		"打扰了，我是__AIREPLACE__，你有时间么",
-		"你好，我是__AIREPLACE__",
-		"我是__AIREPLACE__，有点事特地找你聊聊",
+	["greetfemale"] = {
+		"我是__AIREPLACE__，看你有点无聊，我来陪你好了",
+		"这么无聊，怕不是有什么心事？",
+	},
+	["greetmale"] = {
+		"俺是__AIREPLACE__，想俺了么？",
+		"看你这么无聊，是不是想俺想到流鼻血。"
 	},
 	["parrotdup"] = {
-		"学我说话有意思么。。。。",
-		"我可能在和鹦鹉说话",
-		"就这个事，不用重复啦！"
+		"你叫什么来着？",
+		"你多大了？",
+		"你是男生还是女生啊？"
 	},
 	["recvdup"] = {
 		"你是在自言自语吗？",
@@ -70,7 +88,7 @@ sendingstep = function()
 	if (data.sendingStep ~= 5) and data.sendpressed then
 		me:sendRelease()
 	end
-	
+
 	if data.sendingStep == 0 then
 		if #data.tosend ~= 0 then
 			local tosend = data.tosend[1]
@@ -110,23 +128,23 @@ sendingstep = function()
 		data.sendingStep = 0
 		timer = consts.thinkdelay
 	end
-	
+
 	if timer ~= 1 then
 		timer = generateRandom(timer)
 	end
-	
+
 	me:addTimer(consts.operationTimerId, timer)
 end
 
 sendTo = function(to, content)
 	if not to then to = "all" end
 	me:debugOutput("sendTo".. to .. content)
-	
+
 	local tosend = {
 		["to"] = to,
 		["content"] = content
 	}
-	
+
 	table.insert(data.tosend, tosend)
 end
 
@@ -154,12 +172,12 @@ talk = function(from, content)
 	if not data.recvList[from] then
 		data.recvList[from] = {}
 	end
-	
+
 	table.insert(data.recvList[from], content)
 	if #(data.recvList[from]) > 3 then
 		table.remove(data.recvList[from], 1)
 	end
-	
+
 	if #(data.recvList[from]) == 3 then
 		local allequal = true;
 		local first
@@ -173,7 +191,7 @@ talk = function(from, content)
 		end
 		if allequal then return end
 	end
-	
+
 	analyzeContent(from)
 end
 
@@ -185,13 +203,13 @@ removePlayer = function(name)
 	me:debugOutput("removePlayer"..name)
 	data.recvList[name] = nil
 	data.lastSent[name] = nil
-	
+
 	if data.sendingTo == name then
 		data.sending = ""
 		data.sendingTo = ""
 		data.sendingStep = 0
 	end
-	
+
 	local flag = false
 	while not flag do
 		flag = true
@@ -216,10 +234,24 @@ playerSpoken = function(from, to, content, fromYou, toYou, groupsent)
 	if toYou then
 		talk(from, content)
 	end
-	
+
 	if groupsent then
 		if string.find(content, me:name()) then
 			send(from, getStringFromBase("callme"))
+		else
+			local boring = false
+			for _, i in ipairs(consts.boringKey) do
+				if string.find(content, i) then
+					boring = true
+					break
+				end
+			end
+
+			if boring then
+				local sending = getStringFromBase("greet" .. me:gender())
+				sending = string.gsub(sending, "__AIREPLACE__", me:name())
+				sendTo(from, sending)
+			end
 		end
 	end
 end
@@ -242,11 +274,11 @@ tlReceive = function(value, sending, from)
 	else
 		-- how to qDebug()????
 	end
-	
+
 	if (toSend == "") then
-		toSend = getStringFromBase("change")
+		toSend = getStringFromBase("change" .. me:gender())
 	end
-	
+
 	send(from, toSend)
 end
 

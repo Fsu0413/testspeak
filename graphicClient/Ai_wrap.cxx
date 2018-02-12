@@ -3012,7 +3012,42 @@ fail:
 }
 
 
-static int _wrap_Ai_queryTl(lua_State* L) {
+static int _wrap_Ai_queryTl__SWIG_0(lua_State* L) {
+  int SWIG_arg = 0;
+  Ai *arg1 = (Ai *) 0 ;
+  QString *arg2 = 0 ;
+  QString *arg3 = 0 ;
+  QString *arg4 = 0 ;
+  QString temp2 ;
+  QString temp3 ;
+  QString temp4 ;
+  
+  SWIG_check_num_args("Ai::queryTl",4,4)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::queryTl",1,"Ai *");
+  if(!lua_isstring(L,2)) SWIG_fail_arg("Ai::queryTl",2,"QString const &");
+  if(!lua_isstring(L,3)) SWIG_fail_arg("Ai::queryTl",3,"QString const &");
+  if(!lua_isstring(L,4)) SWIG_fail_arg("Ai::queryTl",4,"QString const &");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
+    SWIG_fail_ptr("Ai_queryTl",1,SWIGTYPE_p_Ai);
+  }
+  
+  temp2 = QString::fromUtf8(lua_tostring(L, 2)); arg2 = &temp2; 
+  temp3 = QString::fromUtf8(lua_tostring(L, 3)); arg3 = &temp3; 
+  temp4 = QString::fromUtf8(lua_tostring(L, 4)); arg4 = &temp4; 
+  (arg1)->queryTl((QString const &)*arg2,(QString const &)*arg3,(QString const &)*arg4);
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_Ai_queryTl__SWIG_1(lua_State* L) {
   int SWIG_arg = 0;
   Ai *arg1 = (Ai *) 0 ;
   QString *arg2 = 0 ;
@@ -3040,6 +3075,75 @@ static int _wrap_Ai_queryTl(lua_State* L) {
 fail:
   lua_error(L);
   return SWIG_arg;
+}
+
+
+static int _wrap_Ai_queryTl(lua_State* L) {
+  int argc;
+  int argv[5]={
+    1,2,3,4,5
+  };
+  
+  argc = lua_gettop(L);
+  if (argc == 3) {
+    int _v;
+    {
+      void *ptr;
+      if (SWIG_isptrtype(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_Ai, 0)) {
+        _v = 0;
+      } else {
+        _v = 1;
+      }
+    }
+    if (_v) {
+      {
+        _v = lua_isstring(L,argv[1]);
+      }
+      if (_v) {
+        {
+          _v = lua_isstring(L,argv[2]);
+        }
+        if (_v) {
+          return _wrap_Ai_queryTl__SWIG_1(L);
+        }
+      }
+    }
+  }
+  if (argc == 4) {
+    int _v;
+    {
+      void *ptr;
+      if (SWIG_isptrtype(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_Ai, 0)) {
+        _v = 0;
+      } else {
+        _v = 1;
+      }
+    }
+    if (_v) {
+      {
+        _v = lua_isstring(L,argv[1]);
+      }
+      if (_v) {
+        {
+          _v = lua_isstring(L,argv[2]);
+        }
+        if (_v) {
+          {
+            _v = lua_isstring(L,argv[3]);
+          }
+          if (_v) {
+            return _wrap_Ai_queryTl__SWIG_0(L);
+          }
+        }
+      }
+    }
+  }
+  
+  SWIG_Lua_pusherrstring(L,"Wrong arguments for overloaded function 'Ai_queryTl'\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    Ai::queryTl(QString const &,QString const &,QString const &)\n"
+    "    Ai::queryTl(QString const &,QString const &)\n");
+  lua_error(L);return 0;
 }
 
 

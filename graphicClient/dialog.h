@@ -8,7 +8,6 @@
 
 class QCloseEvent;
 class QListWidget;
-class QComboBox;
 class QLineEdit;
 class QPushButton;
 class Client;
@@ -25,7 +24,7 @@ public:
     QMap<QString, QString> lastRecv;
 
     QListWidget *listWidget;
-    QComboBox *comboBox;
+    QListWidget *comboBox;
     QLineEdit *edit;
     QPushButton *sendbtn;
 

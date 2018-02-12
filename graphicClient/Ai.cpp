@@ -4,11 +4,11 @@
 #include "dialog.h"
 #include "lua.hpp"
 #include <QApplication>
-#include <QComboBox>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QLineEdit>
+#include <QListWidget>
 #include <QMap>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -83,11 +83,15 @@ void Ai::queryPlayer(const QString &name)
     client->queryPlayerDetail(name);
 }
 
-void Ai::queryTl(const QString &id, const QString &content)
+void Ai::queryTl(const QString &id, const QString &content, const QString &_key)
 {
     QJsonObject ob;
 
-    ob["key"] = QJsonValue(currentTlset["key"].toString());
+    QString key = _key;
+    if (_key.isEmpty())
+        key = currentTlset["key"].toString();
+
+    ob["key"] = QJsonValue(key);
     ob["userid"] = QJsonValue(id);
     ob["info"] = QJsonValue(content);
 
@@ -127,10 +131,13 @@ void Ai::killTimer(int timerId)
 
 bool Ai::setNameCombo(const QString &name)
 {
-    int n = dialog->comboBox->findText(name);
-    if (n != -1 && n != dialog->comboBox->currentIndex()) {
-        dialog->comboBox->setCurrentIndex(n);
-        return true;
+    dialog->comboBox->setFocus();
+    auto items = dialog->comboBox->findItems(name, Qt::MatchExactly);
+    foreach (QListWidgetItem *item, items) {
+        if (item->text() == name) {
+            dialog->comboBox->setCurrentItem(item);
+            return true;
+        }
     }
 
     return false;
@@ -198,7 +205,7 @@ void Ai::removePlayer(QString name)
 
 void Ai::playerDetail(QJsonObject ob)
 {
-    QString obName = ob.value("name").toString();
+    QString obName = ob.value("userName").toString();
     QString obGender = ob.value("gender").toString();
 
     lua_getglobal(l, "playerDetail");
