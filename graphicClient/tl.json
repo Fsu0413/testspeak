@@ -1,62 +1,79 @@
 [
 	{
 		"name": "小瑟",
-		"key": "7ada11095ad24a499cd253be48574b0e",
+		"key": "3f2608b1ceef402986186cc495c27fbe",
 		"gender": "female",
 		"aiFile": "ai/legacyAi.lua",
-		"comments": "游戏 休闲娱乐"
+		"userName": "littleSe001",
+		"comments": "游戏 休闲娱乐",
+		"age": 23
 	},
 	{
 		"name": "老游",
-		"key": "ca88160bfc26416c8e8b56f228c936a7",
+		"key": "f9066008331a4be499f63742ab7b7d01",
 		"gender": "male",
 		"aiFile": "ai/legacyAiNoGender.lua",
-		"comments": "游戏 游戏互动"
+		"userName": "swim7",
+		"comments": "游戏 游戏互动",
+		"age": 26
 	},
 	{
 		"name": "小二",
-		"key": "d4780ff86912451d9ff57d61c4d1354e",
+		"key": "1fb88f63a97b409cb0279e2ddc2660b5",
 		"gender": "female",
 		"aiFile": "ai/legacyAiNoGender.lua",
-		"comments": "游戏 虚拟伴侣"
+		"userName": "twob",
+		"comments": "游戏 虚拟伴侣",
+		"age": 12
 	},
 	{
 		"name": "小珍",
-		"key": "fb2b452347644bf1a659b8f0371afb4b",
+		"key": "41e714e158cb47cb8f3e30df1153f47d",
 		"gender": "female",
 		"aiFile": "ai/xiaozhen.lua",
-		"comments": "社交社群 聊天倾诉"
+		"userName": "Pearl666",
+		"comments": "社交社群 聊天倾诉",
+		"age": 17
 	},
 	{
 		"name": "老宠",
-		"key": "9490ce0529be4f8bad25174727411d5f",
+		"key": "38b55248d5294bb9b2a58f58026e7799",
 		"gender": "male",
 		"aiFile": "ai/xiaozhen.lua",
-		"comments": "社交社群 虚拟宠物"
+		"userName": "TheBigPetty",
+		"comments": "社交社群 虚拟宠物",
+		"age": 22
 	},
 	{
 		"name": "老裴",
-		"key": "c75f179984b24a5cbfb4931cf285b8bf",
+		"key": "9f837f392e1d4192a356fd579f480b62",
 		"aiFile": "ai/legacyAi.lua",
 		"gender": "male",
-		"comments": "社交社群 虚拟陪聊"
+		"userName": "peithebeset",
+		"comments": "社交社群 虚拟陪聊",
+		"age": 29
 	},
 	{
 		"name": "帅帅",
-		"gender": "male"
+		"gender": "male",
+		"userName": "Fsu0413"
 	},
 	{
 		"name": "小芳",
 		"gender": "female",
-		"key": "637112039c3b4c169efdd08bc1881bf9",
+		"key": "a14fb5acafe343f596e02bbcbb4b2f5a",
 		"comments": "社交社群 聊天调侃",
-		"aiFile": "ai/xiaofang.lua"
+		"userName": "SmartFang",
+		"aiFile": "ai/xiaofang.lua",
+		"age": 19
 	},
 	{
 		"name": "小于",
-		"key": "674ed594dd8f4c54b5a21f95e17200c7",
+		"key": "dc43016f85ba41cba546c0ebfd4f51ee",
 		"gender": "female",
 		"aiFile": "ai/xiaofang.lua",
-		"comments": "社交社群 休闲娱乐"
+		"userName": "CleverYu",
+		"comments": "社交社群 休闲娱乐",
+		"age": 21
 	}
 ]

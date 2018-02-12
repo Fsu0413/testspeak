@@ -13,6 +13,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonParseError>
+#include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QMap>
@@ -47,17 +48,37 @@ void readConfig()
     }
 }
 
+QString generateConfigString()
+{
+    QString str;
+    static const QStringList l{"userName", "name", "gender"};
+
+    foreach (const QString &i, l) {
+        if (currentTlset.contains(i))
+            str.append(QString("%1: %2\n").arg(i).arg(currentTlset[i].toString()));
+    }
+
+    if (currentTlset.contains("age"))
+        str.append(QString("age: %1").arg(currentTlset["age"].toInt()));
+
+    str = str.trimmed();
+    return str;
+}
+
 Dialog::Dialog(QWidget *parent)
     : QWidget(parent)
 {
+    readConfig();
+
     listWidget = new QListWidget;
     listWidget->setSortingEnabled(false);
 
-    comboBox = new QComboBox;
-    comboBox->setEditable(false);
+    comboBox = new QListWidget;
+    comboBox->setSortingEnabled(false);
     comboBox->addItem("all");
 
-    comboBox->setMinimumWidth(QFontMetrics(qApp->font()).width('Q') * 15);
+    comboBox->setMinimumWidth(QFontMetrics(qApp->font()).width('Q') * 10);
+    comboBox->setMaximumWidth(QFontMetrics(qApp->font()).width('Q') * 20);
 
     sendbtn = new QPushButton("send");
     connect(sendbtn, &QPushButton::clicked, this, &Dialog::send);
@@ -67,17 +88,22 @@ Dialog::Dialog(QWidget *parent)
     connect(edit, &QLineEdit::returnPressed, [this]() -> void { sendbtn->animateClick(); });
 
     QHBoxLayout *hlayout = new QHBoxLayout;
-    hlayout->addWidget(comboBox);
     hlayout->addWidget(edit);
     hlayout->addWidget(sendbtn);
 
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(listWidget);
-    layout->addLayout(hlayout);
+    QVBoxLayout *vlayout = new QVBoxLayout;
+    vlayout->addWidget(listWidget);
+    vlayout->addLayout(hlayout);
+
+    QVBoxLayout *vlayout2 = new QVBoxLayout;
+    vlayout2->addWidget(new QLabel(generateConfigString()));
+    vlayout2->addWidget(comboBox);
+
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->addLayout(vlayout);
+    layout->addLayout(vlayout2);
 
     setLayout(layout);
-
-    readConfig();
 
     client = new Client(this);
 
@@ -114,9 +140,13 @@ void Dialog::addPlayer(QString name)
 
 void Dialog::removePlayer(QString name)
 {
-    int n = comboBox->findText(name);
-    if (n != -1)
-        comboBox->removeItem(n);
+    for (int i = 0; i < comboBox->count(); ++i) {
+        QListWidgetItem *item = comboBox->item(i);
+        if (item != nullptr && item->text() == name) {
+            delete comboBox->takeItem(i);
+            i = -1;
+        }
+    }
 
     QString x = tr("Player left: ");
     x.append(name);
@@ -154,8 +184,12 @@ void Dialog::playerSpoken(QString from, QString to, QString content, bool fromYo
 void Dialog::send()
 {
     if (!edit->text().isEmpty()) {
-        QString to = comboBox->currentText();
-        if (comboBox->currentText() == "all")
+        QString to = "all";
+        QListWidgetItem *item = comboBox->currentItem();
+        if (item != nullptr)
+            to = comboBox->currentItem()->text();
+
+        if (to == "all")
             to.clear();
 
         client->speak(to, edit->text());

@@ -51,12 +51,12 @@ void Client::disconnectFromHost()
 
 void Client::notifiedSignedIn(const QJsonObject &contents)
 {
-    emit addPlayer(contents.value("name").toString());
+    emit addPlayer(contents.value("userName").toString());
 }
 
 void Client::notifiedSignedOut(const QJsonObject &contents)
 {
-    emit removePlayer(contents.value("name").toString());
+    emit removePlayer(contents.value("userName").toString());
 }
 
 void Client::notifiedQueryResult(const QJsonObject &contents)
@@ -99,7 +99,7 @@ void Client::signIn()
         ob.remove("comments");
         ob.remove("aiFile");
         ob.remove("key");
-        selfName = ob.value("name").toString();
+        selfName = ob.value("userName").toString();
         ob["protocolValue"] = int(SP_SignIn);
         QJsonDocument doc(ob);
         writeJsonDocument(doc);
@@ -143,7 +143,7 @@ void Client::queryPlayerDetail(QString name)
 {
     QJsonObject ob2;
     ob2["protocolValue"] = int(SP_Query);
-    ob2["name"] = name;
+    ob2["userName"] = name;
     QJsonDocument doc2(ob2);
     writeJsonDocument(doc2);
 }
