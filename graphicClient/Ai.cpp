@@ -83,7 +83,7 @@ void Ai::queryPlayer(const QString &name)
     client->queryPlayerDetail(name);
 }
 
-void Ai::queryTl(const QString &id, const QString &content, const QString &_key)
+void Ai::queryTl(const QString &id, const QString &content, const QString &_key, const QString &aiComment)
 {
     QJsonObject ob;
 
@@ -102,6 +102,7 @@ void Ai::queryTl(const QString &id, const QString &content, const QString &_key)
 
     QNetworkReply *reply = nam1->post(req, doc.toJson());
     reply->setProperty("from", id);
+    reply->setProperty("aiComment", aiComment);
     connect(reply, &QNetworkReply::finished, this, &Ai::receive);
 }
 
@@ -235,6 +236,7 @@ void Ai::receive()
 
     QByteArray arr = reply->readAll();
     QString from = reply->property("from").toString();
+    QString aiComment = reply->property("aiComment").toString();
     reply->deleteLater();
 
     QJsonDocument doc = QJsonDocument::fromJson(arr);
@@ -247,7 +249,8 @@ void Ai::receive()
     lua_pushinteger(l, value);
     lua_pushstring(l, sending.toUtf8().constData());
     lua_pushstring(l, from.toUtf8().constData());
-    pcall(3);
+    lua_pushstring(l, aiComment.toUtf8().constData());
+    pcall(4);
 }
 
 void Ai::timeout()

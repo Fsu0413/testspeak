@@ -54,7 +54,7 @@ public:
     QString name();
     QString gender();
     void queryPlayer(const QString &name);
-    void queryTl(const QString &id, const QString &content, const QString &key = QString());
+    void queryTl(const QString &id, const QString &content, const QString &key = QString(), const QString &aiComment = QString());
     void addTimer(int timerId, int timeOut);
     void killTimer(int timerId);
     bool setNameCombo(const QString &name);
