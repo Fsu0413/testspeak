@@ -252,7 +252,7 @@ tlReceive = function(value, sending, from)
 	if (value == 100000) or (value == 40002) then
 		toSend = sending
 		toSend = string.gsub(toSend, "%s", "")
-		if toSend == data.lastSent then
+		if toSend == data.lastSent[from] then
 			toSend = getStringFromBase("senddup")
 		end
 	elseif value == 40004 then
