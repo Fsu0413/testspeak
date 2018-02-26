@@ -20,7 +20,7 @@ consts = {
 	["operationTimerId"] = 3,
 
 	["outoftimeTimerId"] = 4,
-	["outoftimeTimeout"] = 60000,
+	["outoftimeTimeout"] = 1000,
 
 	["thinkdelay"] = 500,
 	["clickDelay"] = 200,
@@ -306,14 +306,15 @@ timeout = function(timerid)
 		sendingstep()
 	elseif (timerid == consts.outoftimeTimerId) then
 		local dt = os.date("*t")
+		me:debugOutput("outoftimeTimerId " .. dt.day .. " " .. dt.hour .. " " .. dt.min.. " " .. dt.sec)
 		local revive = false
 		if (dt.day == 1) or (dt.day > data.outoftimeDay) then
 			if dt.hour >= 1 then
 				revive = true
-			elseif dt.minute > 55 then
+			elseif dt.min > 55 then
 				revive = true
-			elseif dt.minute > 5 then
-				revive = (math.random(10) == 1)
+			elseif dt.min > 5 then
+				revive = (math.random(500) == 1)
 			end
 		end
 
