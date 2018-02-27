@@ -8,6 +8,7 @@
 
 class QCloseEvent;
 class QListWidget;
+class QListWidgetItem;
 class QLineEdit;
 class QPushButton;
 class Client;
@@ -20,15 +21,14 @@ public:
     Dialog(QWidget *parent = nullptr);
     ~Dialog();
 
-    QMap<QString, QString> lastSent;
-    QMap<QString, QString> lastRecv;
-
     QListWidget *listWidget;
-    QListWidget *comboBox;
+    QListWidget *userNames;
     QLineEdit *edit;
     QPushButton *sendbtn;
 
     Client *client;
+
+    QMap<QString, QStringList *> speakMap;
 
 public slots:
     void addPlayer(QString name);
@@ -38,9 +38,14 @@ public slots:
 
     void send();
 
+    void userNameChanged(QListWidgetItem *current, QListWidgetItem *previous);
+
     // QWidget interface
 protected:
     void closeEvent(QCloseEvent *event) override;
+
+private:
+    void updateList();
 };
 
 #endif // DIALOG_H

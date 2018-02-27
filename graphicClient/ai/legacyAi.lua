@@ -37,7 +37,7 @@ consts = {
 	["outoftimeTimerId"] = 4,
 	["outoftimeTimeout"] = 1000,
 
-	["thinkdelay"] = 500,
+	["thinkdelay"] = 5000,
 	["clickDelay"] = 200,
 	["typeDelay"] = 100,
 	["sendDelay"] = 1500,
@@ -119,6 +119,12 @@ sendingstep = function()
 			data.sendingStep = 1
 			timer = consts.clickDelay
 			table.remove(data.tosend, 1)
+		else
+			local x = me:firstUnreadMessageFrom()
+			if x and (x ~= "") and (math.random(20) == 1) then
+				data.sendingStep = 101
+				timer = consts.clickDelay
+			end
 		end
 	elseif data.sendingStep == 1 then
 		-- me:popupNameCombo()
@@ -148,7 +154,14 @@ sendingstep = function()
 		me:sendClick()
 		data.sendpressed = false
 		data.sendingStep = 0
-		timer = consts.thinkdelay
+		timer = consts.sendDelay
+	elseif data.sendingStep == 101 then
+		local x = me:firstUnreadMessageFrom()
+		if x and (x ~= "") then
+			data.sendingStep = 0
+			me:setNameCombo(x)
+			timer = consts.sendDelay
+		end
 	end
 
 	if timer ~= 1 then
@@ -206,6 +219,25 @@ end
 talk = function(content)
 	me:killTimer(consts.timeoutTimerId)
 	data.timeoutTime = 0
+
+	if data.sendingTo == data.speakingTo then
+		data.sending = ""
+		data.sendingTo = ""
+		data.sendingStep = 0
+	end
+
+	local flag = false
+	while not flag do
+		flag = true
+		for _, i in ipairs(data.tosend) do
+			if i.to == data.speakingTo then
+				table.remove(data.tosend, _)
+				flag = false
+				break
+			end
+		end
+	end
+
 	if content == data.lastRecv then
 		send(getStringFromBase("recvdup"))
 		data.repeatTime = data.repeatTime + 1

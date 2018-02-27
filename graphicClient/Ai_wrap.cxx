@@ -2678,9 +2678,8 @@ SWIG_Lua_dostring(lua_State *L, const char *str) {
 #define SWIGTYPE_p_Ai swig_types[0]
 #define SWIGTYPE_p_Client swig_types[1]
 #define SWIGTYPE_p_Dialog swig_types[2]
-#define SWIGTYPE_p_QString swig_types[3]
-static swig_type_info *swig_types[5];
-static swig_module_info swig_module = {swig_types, 4, 0, 0, 0, 0};
+static swig_type_info *swig_types[4];
+static swig_module_info swig_module = {swig_types, 3, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -2714,198 +2713,6 @@ void setMe(lua_State *l, Ai *ai)
 #ifdef __cplusplus
 extern "C" {
 #endif
-static int _wrap_new_QString(lua_State* L) {
-  int SWIG_arg = 0;
-  QString *result = 0 ;
-  
-  SWIG_check_num_args("QString::QString",0,0)
-  result = (QString *)new QString();
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_QString,1); SWIG_arg++; 
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static void swig_delete_QString(void *obj) {
-QString *arg1 = (QString *) obj;
-delete arg1;
-}
-static int _proxy__wrap_new_QString(lua_State *L) {
-    assert(lua_istable(L,1));
-    lua_pushcfunction(L,_wrap_new_QString);
-    assert(!lua_isnil(L,-1));
-    lua_replace(L,1); /* replace our table with real constructor */
-    lua_call(L,lua_gettop(L)-1,1);
-    return 1;
-}
-static swig_lua_attribute swig_QString_attributes[] = {
-    {0,0,0}
-};
-static swig_lua_method swig_QString_methods[]= {
-    {0,0}
-};
-static swig_lua_method swig_QString_meta[] = {
-    {0,0}
-};
-
-static swig_lua_attribute swig_QString_Sf_SwigStatic_attributes[] = {
-    {0,0,0}
-};
-static swig_lua_const_info swig_QString_Sf_SwigStatic_constants[]= {
-    {0,0,0,0,0,0}
-};
-static swig_lua_method swig_QString_Sf_SwigStatic_methods[]= {
-    {0,0}
-};
-static swig_lua_class* swig_QString_Sf_SwigStatic_classes[]= {
-    0
-};
-
-static swig_lua_namespace swig_QString_Sf_SwigStatic = {
-    "QString",
-    swig_QString_Sf_SwigStatic_methods,
-    swig_QString_Sf_SwigStatic_attributes,
-    swig_QString_Sf_SwigStatic_constants,
-    swig_QString_Sf_SwigStatic_classes,
-    0
-};
-static swig_lua_class *swig_QString_bases[] = {0};
-static const char *swig_QString_base_names[] = {0};
-static swig_lua_class _wrap_class_QString = { "QString", "QString", &SWIGTYPE_p_QString,_proxy__wrap_new_QString, swig_delete_QString, swig_QString_methods, swig_QString_attributes, &swig_QString_Sf_SwigStatic, swig_QString_meta, swig_QString_bases, swig_QString_base_names };
-
-static int _wrap_new_Dialog(lua_State* L) {
-  int SWIG_arg = 0;
-  Dialog *result = 0 ;
-  
-  SWIG_check_num_args("Dialog::Dialog",0,0)
-  result = (Dialog *)new Dialog();
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Dialog,1); SWIG_arg++; 
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static void swig_delete_Dialog(void *obj) {
-Dialog *arg1 = (Dialog *) obj;
-delete arg1;
-}
-static int _proxy__wrap_new_Dialog(lua_State *L) {
-    assert(lua_istable(L,1));
-    lua_pushcfunction(L,_wrap_new_Dialog);
-    assert(!lua_isnil(L,-1));
-    lua_replace(L,1); /* replace our table with real constructor */
-    lua_call(L,lua_gettop(L)-1,1);
-    return 1;
-}
-static swig_lua_attribute swig_Dialog_attributes[] = {
-    {0,0,0}
-};
-static swig_lua_method swig_Dialog_methods[]= {
-    {0,0}
-};
-static swig_lua_method swig_Dialog_meta[] = {
-    {0,0}
-};
-
-static swig_lua_attribute swig_Dialog_Sf_SwigStatic_attributes[] = {
-    {0,0,0}
-};
-static swig_lua_const_info swig_Dialog_Sf_SwigStatic_constants[]= {
-    {0,0,0,0,0,0}
-};
-static swig_lua_method swig_Dialog_Sf_SwigStatic_methods[]= {
-    {0,0}
-};
-static swig_lua_class* swig_Dialog_Sf_SwigStatic_classes[]= {
-    0
-};
-
-static swig_lua_namespace swig_Dialog_Sf_SwigStatic = {
-    "Dialog",
-    swig_Dialog_Sf_SwigStatic_methods,
-    swig_Dialog_Sf_SwigStatic_attributes,
-    swig_Dialog_Sf_SwigStatic_constants,
-    swig_Dialog_Sf_SwigStatic_classes,
-    0
-};
-static swig_lua_class *swig_Dialog_bases[] = {0};
-static const char *swig_Dialog_base_names[] = {0};
-static swig_lua_class _wrap_class_Dialog = { "Dialog", "Dialog", &SWIGTYPE_p_Dialog,_proxy__wrap_new_Dialog, swig_delete_Dialog, swig_Dialog_methods, swig_Dialog_attributes, &swig_Dialog_Sf_SwigStatic, swig_Dialog_meta, swig_Dialog_bases, swig_Dialog_base_names };
-
-static int _wrap_new_Client(lua_State* L) {
-  int SWIG_arg = 0;
-  Client *result = 0 ;
-  
-  SWIG_check_num_args("Client::Client",0,0)
-  result = (Client *)new Client();
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_Client,1); SWIG_arg++; 
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static void swig_delete_Client(void *obj) {
-Client *arg1 = (Client *) obj;
-delete arg1;
-}
-static int _proxy__wrap_new_Client(lua_State *L) {
-    assert(lua_istable(L,1));
-    lua_pushcfunction(L,_wrap_new_Client);
-    assert(!lua_isnil(L,-1));
-    lua_replace(L,1); /* replace our table with real constructor */
-    lua_call(L,lua_gettop(L)-1,1);
-    return 1;
-}
-static swig_lua_attribute swig_Client_attributes[] = {
-    {0,0,0}
-};
-static swig_lua_method swig_Client_methods[]= {
-    {0,0}
-};
-static swig_lua_method swig_Client_meta[] = {
-    {0,0}
-};
-
-static swig_lua_attribute swig_Client_Sf_SwigStatic_attributes[] = {
-    {0,0,0}
-};
-static swig_lua_const_info swig_Client_Sf_SwigStatic_constants[]= {
-    {0,0,0,0,0,0}
-};
-static swig_lua_method swig_Client_Sf_SwigStatic_methods[]= {
-    {0,0}
-};
-static swig_lua_class* swig_Client_Sf_SwigStatic_classes[]= {
-    0
-};
-
-static swig_lua_namespace swig_Client_Sf_SwigStatic = {
-    "Client",
-    swig_Client_Sf_SwigStatic_methods,
-    swig_Client_Sf_SwigStatic_attributes,
-    swig_Client_Sf_SwigStatic_constants,
-    swig_Client_Sf_SwigStatic_classes,
-    0
-};
-static swig_lua_class *swig_Client_bases[] = {0};
-static const char *swig_Client_base_names[] = {0};
-static swig_lua_class _wrap_class_Client = { "Client", "Client", &SWIGTYPE_p_Client,_proxy__wrap_new_Client, swig_delete_Client, swig_Client_methods, swig_Client_attributes, &swig_Client_Sf_SwigStatic, swig_Client_meta, swig_Client_bases, swig_Client_base_names };
-
 static int _wrap_new_Ai(lua_State* L) {
   int SWIG_arg = 0;
   Client *arg1 = (Client *) 0 ;
@@ -3506,6 +3313,30 @@ fail:
 }
 
 
+static int _wrap_Ai_firstUnreadMessageFrom(lua_State* L) {
+  int SWIG_arg = 0;
+  Ai *arg1 = (Ai *) 0 ;
+  QString result;
+  
+  SWIG_check_num_args("Ai::firstUnreadMessageFrom",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::firstUnreadMessageFrom",1,"Ai *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
+    SWIG_fail_ptr("Ai_firstUnreadMessageFrom",1,SWIGTYPE_p_Ai);
+  }
+  
+  result = (arg1)->firstUnreadMessageFrom();
+  lua_pushstring(L, (&result)->toUtf8().constData()); SWIG_arg++;
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static void swig_delete_Ai(void *obj) {
 Ai *arg1 = (Ai *) obj;
 delete arg1;
@@ -3537,6 +3368,7 @@ static swig_lua_method swig_Ai_methods[]= {
     { "removeFirstChar", _wrap_Ai_removeFirstChar},
     { "debugOutput", _wrap_Ai_debugOutput},
     { "prepareExit", _wrap_Ai_prepareExit},
+    { "firstUnreadMessageFrom", _wrap_Ai_firstUnreadMessageFrom},
     {0,0}
 };
 static swig_lua_method swig_Ai_meta[] = {
@@ -3578,9 +3410,6 @@ static swig_lua_method swig_SwigModule_methods[]= {
     {0,0}
 };
 static swig_lua_class* swig_SwigModule_classes[]= {
-&_wrap_class_QString,
-&_wrap_class_Dialog,
-&_wrap_class_Client,
 &_wrap_class_Ai,
     0
 };
@@ -3603,27 +3432,23 @@ static swig_lua_namespace swig_SwigModule = {
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
 static swig_type_info _swigt__p_Ai = {"_p_Ai", "Ai *", 0, 0, (void*)&_wrap_class_Ai, 0};
-static swig_type_info _swigt__p_Client = {"_p_Client", "Client *", 0, 0, (void*)&_wrap_class_Client, 0};
-static swig_type_info _swigt__p_Dialog = {"_p_Dialog", "Dialog *", 0, 0, (void*)&_wrap_class_Dialog, 0};
-static swig_type_info _swigt__p_QString = {"_p_QString", "QString *", 0, 0, (void*)&_wrap_class_QString, 0};
+static swig_type_info _swigt__p_Client = {"_p_Client", "Client *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_Dialog = {"_p_Dialog", "Dialog *", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
   &_swigt__p_Ai,
   &_swigt__p_Client,
   &_swigt__p_Dialog,
-  &_swigt__p_QString,
 };
 
 static swig_cast_info _swigc__p_Ai[] = {  {&_swigt__p_Ai, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Client[] = {  {&_swigt__p_Client, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Dialog[] = {  {&_swigt__p_Dialog, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_QString[] = {  {&_swigt__p_QString, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_Ai,
   _swigc__p_Client,
   _swigc__p_Dialog,
-  _swigc__p_QString,
 };
 
 

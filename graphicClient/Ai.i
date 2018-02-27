@@ -40,9 +40,9 @@
 %typemap(in) QString &INOUT =const QString &;
 %typemap(argout) QString &INOUT = QString &OUTPUT;
 
-class QString { };
-class Dialog { };
-class Client { };
+class QString;
+class Dialog;
+class Client;
 
 class Ai
 {
@@ -66,6 +66,7 @@ public:
     QString removeFirstChar(const QString &c);
     void debugOutput(const QString &c);
     void prepareExit();
+    QString firstUnreadMessageFrom();
 };
 
 

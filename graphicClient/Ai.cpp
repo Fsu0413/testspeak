@@ -132,11 +132,11 @@ void Ai::killTimer(int timerId)
 
 bool Ai::setNameCombo(const QString &name)
 {
-    dialog->comboBox->setFocus();
-    auto items = dialog->comboBox->findItems(name, Qt::MatchExactly);
+    dialog->userNames->setFocus();
+    auto items = dialog->userNames->findItems(name, Qt::MatchExactly);
     foreach (QListWidgetItem *item, items) {
         if (item->text() == name) {
-            dialog->comboBox->setCurrentItem(item);
+            dialog->userNames->setCurrentItem(item);
             return true;
         }
     }
@@ -188,6 +188,19 @@ void Ai::debugOutput(const QString &c)
 void Ai::prepareExit()
 {
     qApp->exit();
+}
+
+QString Ai::firstUnreadMessageFrom()
+{
+    for (int i = 0; i < dialog->userNames->count(); ++i) {
+        auto item = dialog->userNames->item(i);
+        if (item != nullptr) {
+            if (item->backgroundColor() == qRgb(255, 0, 0))
+                return item->text();
+        }
+    }
+
+    return QString();
 }
 
 void Ai::addPlayer(QString name)

@@ -4,7 +4,7 @@ data = {
 	["lastSent"] = {},
 	["recvTime"] = {},
 	["sentTime"] = {},
-	
+
 	["outoftime"] = false,
 	["outoftimeDay"] = 0,
 	["outoftimeKnown"] = {},
@@ -24,7 +24,7 @@ consts = {
 	["outoftimeTimerId"] = 4,
 	["outoftimeTimeout"] = 1000,
 
-	["thinkdelay"] = 500,
+	["thinkdelay"] = 5000,
 	["clickDelay"] = 200,
 	["typeDelay"] = 100,
 	["sendDelay"] = 1500,
@@ -117,7 +117,7 @@ sendingstep = function()
 		me:sendClick()
 		data.sendpressed = false
 		data.sendingStep = 0
-		timer = consts.thinkdelay
+		timer = consts.sendDelay
 	end
 
 	if timer ~= 1 then
@@ -169,8 +169,22 @@ talk = function(from, content)
 		table.remove(data.recvList[from], 1)
 	end
 
-	if data.recvTime[from] - data.sentTime[from] < 2 then
-		return
+	if data.sendingTo == from then
+		data.sending = ""
+		data.sendingTo = ""
+		data.sendingStep = 0
+	end
+
+	local flag = false
+	while not flag do
+		flag = true
+		for _, i in ipairs(data.tosend) do
+			if i.to == from then
+				table.remove(data.tosend, _)
+				flag = false
+				break
+			end
+		end
 	end
 
 	if #(data.recvList[from]) == 3 then
@@ -233,7 +247,7 @@ playerSpoken = function(from, to, content, fromYou, toYou, groupsent, senttime)
 		data.sentTime[to] = senttime
 		return
 	end
-	
+
 	for _, i in ipairs(data.outoftimeKnown) do
 		if i == from then
 			return
@@ -262,7 +276,7 @@ tlReceive = function(value, sending, from)
 			me:addTimer(consts.outoftimeTimerId, consts.outoftimeTimeout)
 			data.outoftime = true
 		end
-		
+
 		local contains = false
 		for _, i in ipairs(data.outoftimeKnown) do
 			if i == from then

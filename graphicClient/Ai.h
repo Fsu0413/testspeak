@@ -53,6 +53,7 @@ public:
     QString removeFirstChar(const QString &c);
     void debugOutput(const QString &c);
     void prepareExit();
+    QString firstUnreadMessageFrom();
 
 public slots:
     void addPlayer(QString name);

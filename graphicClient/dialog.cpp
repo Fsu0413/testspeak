@@ -73,12 +73,14 @@ Dialog::Dialog(QWidget *parent)
     listWidget = new QListWidget;
     listWidget->setSortingEnabled(false);
 
-    comboBox = new QListWidget;
-    comboBox->setSortingEnabled(false);
-    comboBox->addItem("all");
+    userNames = new QListWidget;
+    userNames->setSortingEnabled(false);
+    userNames->addItem("all");
 
-    comboBox->setMinimumWidth(QFontMetrics(qApp->font()).width('Q') * 10);
-    comboBox->setMaximumWidth(QFontMetrics(qApp->font()).width('Q') * 20);
+    userNames->setMinimumWidth(QFontMetrics(qApp->font()).width('Q') * 10);
+    userNames->setMaximumWidth(QFontMetrics(qApp->font()).width('Q') * 20);
+
+    connect(userNames, &QListWidget::currentItemChanged, this, &Dialog::userNameChanged);
 
     sendbtn = new QPushButton("send");
     connect(sendbtn, &QPushButton::clicked, this, &Dialog::send);
@@ -97,7 +99,7 @@ Dialog::Dialog(QWidget *parent)
 
     QVBoxLayout *vlayout2 = new QVBoxLayout;
     vlayout2->addWidget(new QLabel(generateConfigString()));
-    vlayout2->addWidget(comboBox);
+    vlayout2->addWidget(userNames);
 
     QHBoxLayout *layout = new QHBoxLayout;
     layout->addLayout(vlayout);
@@ -126,32 +128,26 @@ Dialog::Dialog(QWidget *parent)
 
 Dialog::~Dialog()
 {
+    qDeleteAll(speakMap);
 }
 
 void Dialog::addPlayer(QString name)
 {
-    comboBox->addItem(name);
-
-    QString x = tr("Player joined: ");
-    x.append(name);
-    listWidget->addItem(x);
-    listWidget->scrollToBottom();
+    userNames->addItem(name);
 }
 
 void Dialog::removePlayer(QString name)
 {
-    for (int i = 0; i < comboBox->count(); ++i) {
-        QListWidgetItem *item = comboBox->item(i);
+    for (int i = 0; i < userNames->count(); ++i) {
+        QListWidgetItem *item = userNames->item(i);
         if (item != nullptr && item->text() == name) {
-            delete comboBox->takeItem(i);
+            delete userNames->takeItem(i);
             i = -1;
         }
     }
 
-    QString x = tr("Player left: ");
-    x.append(name);
-    listWidget->addItem(x);
-    listWidget->scrollToBottom();
+    if (speakMap.contains(name))
+        delete speakMap.take(name);
 }
 
 void Dialog::playerDetail(QJsonObject)
@@ -177,17 +173,37 @@ void Dialog::playerSpoken(QString from, QString to, QString content, bool fromYo
 
     QString x = tr("%1 said to %2 at %3: ").arg(from).arg(to).arg(timestr);
     x.append(content);
-    listWidget->addItem(x);
-    listWidget->scrollToBottom();
+
+    QString relatedPerson;
+    if (groupsent)
+        relatedPerson = "all";
+    else if (fromYou)
+        relatedPerson = to;
+    else
+        relatedPerson = from;
+
+    if (!speakMap.contains(relatedPerson))
+        speakMap[relatedPerson] = new QStringList;
+
+    speakMap[relatedPerson]->append(x);
+    if (speakMap[relatedPerson]->length() > 100)
+        speakMap[relatedPerson]->takeFirst();
+
+    foreach (QListWidgetItem *item, userNames->findItems(relatedPerson, Qt::MatchExactly)) {
+        if (!item->isSelected())
+            item->setBackgroundColor(qRgb(255, 0, 0));
+    }
+
+    updateList();
 }
 
 void Dialog::send()
 {
     if (!edit->text().isEmpty()) {
         QString to = "all";
-        QListWidgetItem *item = comboBox->currentItem();
+        QListWidgetItem *item = userNames->currentItem();
         if (item != nullptr)
-            to = comboBox->currentItem()->text();
+            to = userNames->currentItem()->text();
 
         if (to == "all")
             to.clear();
@@ -197,10 +213,35 @@ void Dialog::send()
     }
 }
 
+void Dialog::userNameChanged(QListWidgetItem *current, QListWidgetItem *)
+{
+    current->setBackgroundColor(qRgb(255, 255, 255));
+    QString currentname = current->text();
+    updateList();
+}
+
 void Dialog::closeEvent(QCloseEvent *event)
 {
     if (client != nullptr)
         client->disconnectFromHost();
 
     QWidget::closeEvent(event);
+}
+
+void Dialog::updateList()
+{
+    QString name;
+    auto item = userNames->currentItem();
+    if (item != nullptr)
+        name = item->text();
+
+    if (name.isEmpty())
+        return;
+
+    listWidget->clear();
+    if (!speakMap.contains(name))
+        return;
+
+    listWidget->addItems(*(speakMap[name]));
+    listWidget->scrollToBottom();
 }
