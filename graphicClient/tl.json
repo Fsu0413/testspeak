@@ -1,7 +1,7 @@
 [
 	{
 		"name": "小瑟",
-		"key": "3f2608b1ceef402986186cc495c27fbe",
+		"key": "6f2e27126d4342f6a775d1ad0b65a8b1",
 		"gender": "female",
 		"aiFile": "ai/legacyAi.lua",
 		"userName": "littleSe001",
@@ -10,7 +10,7 @@
 	},
 	{
 		"name": "老游",
-		"key": "f9066008331a4be499f63742ab7b7d01",
+		"key": "c9a725f3ce8c4d30b95fa4e5c29f1292",
 		"gender": "male",
 		"aiFile": "ai/legacyAiNoGender.lua",
 		"userName": "swim7",
@@ -19,7 +19,7 @@
 	},
 	{
 		"name": "小二",
-		"key": "1fb88f63a97b409cb0279e2ddc2660b5",
+		"key": "b24c70a141bd4aee81eb39110472048b",
 		"gender": "female",
 		"aiFile": "ai/legacyAiNoGender.lua",
 		"userName": "twob",
@@ -28,7 +28,7 @@
 	},
 	{
 		"name": "小珍",
-		"key": "41e714e158cb47cb8f3e30df1153f47d",
+		"key": "da375c52087244aa9aed2caad7454e9c",
 		"gender": "female",
 		"aiFile": "ai/xiaozhen.lua",
 		"userName": "Pearl666",
@@ -37,7 +37,7 @@
 	},
 	{
 		"name": "老宠",
-		"key": "38b55248d5294bb9b2a58f58026e7799",
+		"key": "a899c7281bc64853bfe410d91d5c2853",
 		"gender": "male",
 		"aiFile": "ai/xiaozhen.lua",
 		"userName": "TheBigPetty",
@@ -46,7 +46,7 @@
 	},
 	{
 		"name": "老裴",
-		"key": "9f837f392e1d4192a356fd579f480b62",
+		"key": "38ac146d6603450ba28afa375a8041ad",
 		"aiFile": "ai/legacyAi.lua",
 		"gender": "male",
 		"userName": "peithebeset",
@@ -61,7 +61,7 @@
 	{
 		"name": "小芳",
 		"gender": "female",
-		"key": "a14fb5acafe343f596e02bbcbb4b2f5a",
+		"key": "06029d383bb747c8ade4a005426b2bcb",
 		"comments": "社交社群 聊天调侃",
 		"userName": "SmartFang",
 		"aiFile": "ai/xiaofang.lua",
@@ -69,11 +69,11 @@
 	},
 	{
 		"name": "小于",
-		"key": "dc43016f85ba41cba546c0ebfd4f51ee",
+		"key": "3846edd0ecbb432788ae61d2cef27699",
 		"gender": "female",
 		"aiFile": "ai/xiaofang.lua",
 		"userName": "CleverYu",
-		"comments": "社交社群 休闲娱乐",
+		"comments": "社交社群 心理咨询",
 		"age": 21
 	}
 ]

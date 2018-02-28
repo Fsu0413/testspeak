@@ -83,7 +83,7 @@ void Ai::queryPlayer(const QString &name)
     client->queryPlayerDetail(name);
 }
 
-void Ai::queryTl(const QString &id, const QString &content, const QString &_key)
+void Ai::queryTl(const QString &id, const QString &content, const QString &_key, const QString &aiComment)
 {
     QJsonObject ob;
 
@@ -102,6 +102,7 @@ void Ai::queryTl(const QString &id, const QString &content, const QString &_key)
 
     QNetworkReply *reply = nam1->post(req, doc.toJson());
     reply->setProperty("from", id);
+    reply->setProperty("aiComment", aiComment);
     connect(reply, &QNetworkReply::finished, this, &Ai::receive);
 }
 
@@ -131,11 +132,11 @@ void Ai::killTimer(int timerId)
 
 bool Ai::setNameCombo(const QString &name)
 {
-    dialog->comboBox->setFocus();
-    auto items = dialog->comboBox->findItems(name, Qt::MatchExactly);
+    dialog->userNames->setFocus();
+    auto items = dialog->userNames->findItems(name, Qt::MatchExactly);
     foreach (QListWidgetItem *item, items) {
         if (item->text() == name) {
-            dialog->comboBox->setCurrentItem(item);
+            dialog->userNames->setCurrentItem(item);
             return true;
         }
     }
@@ -189,6 +190,19 @@ void Ai::prepareExit()
     qApp->exit();
 }
 
+QString Ai::firstUnreadMessageFrom()
+{
+    for (int i = 0; i < dialog->userNames->count(); ++i) {
+        auto item = dialog->userNames->item(i);
+        if (item != nullptr) {
+            if (item->backgroundColor() == qRgb(255, 0, 0))
+                return item->text();
+        }
+    }
+
+    return QString();
+}
+
 void Ai::addPlayer(QString name)
 {
     lua_getglobal(l, "addPlayer");
@@ -235,6 +249,7 @@ void Ai::receive()
 
     QByteArray arr = reply->readAll();
     QString from = reply->property("from").toString();
+    QString aiComment = reply->property("aiComment").toString();
     reply->deleteLater();
 
     QJsonDocument doc = QJsonDocument::fromJson(arr);
@@ -247,7 +262,8 @@ void Ai::receive()
     lua_pushinteger(l, value);
     lua_pushstring(l, sending.toUtf8().constData());
     lua_pushstring(l, from.toUtf8().constData());
-    pcall(3);
+    lua_pushstring(l, aiComment.toUtf8().constData());
+    pcall(4);
 }
 
 void Ai::timeout()

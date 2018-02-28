@@ -5,6 +5,10 @@ data = {
 	["recvTime"] = {},
 	["sentTime"] = {},
 
+	["outoftime"] = false,
+	["outoftimeDay"] = 0,
+	["outoftimeKnown"] = {},
+
 	["sendingStep"] = 0,
 	["sending"] = "",
 	["typed"] = "",
@@ -18,9 +22,9 @@ consts = {
 	["operationTimerId"] = 3,
 
 	["outoftimeTimerId"] = 4,
-	["outoftimeTimeout"] = 100000,
+	["outoftimeTimeout"] = 1000,
 
-	["thinkdelay"] = 500,
+	["thinkdelay"] = 5000,
 	["clickDelay"] = 200,
 	["typeDelay"] = 100,
 	["sendDelay"] = 1500,
@@ -58,6 +62,10 @@ base = {
 	["outoftime"] = {
 		"今天说了太多，次数用完啦。。。不得不下线了，明天继续！",
 		"不好意思，没时间啦，明天有时间再聊~下线了，88~"
+	},
+	["revive"] = {
+		"又是崭新的一天~有没有啥想跟我说说的？",
+		"再次打扰啦，有时间吗~",
 	},
 }
 
@@ -109,7 +117,7 @@ sendingstep = function()
 		me:sendClick()
 		data.sendpressed = false
 		data.sendingStep = 0
-		timer = consts.thinkdelay
+		timer = consts.sendDelay
 	end
 
 	if timer ~= 1 then
@@ -161,8 +169,22 @@ talk = function(from, content)
 		table.remove(data.recvList[from], 1)
 	end
 
-	if data.recvTime[from] - data.sentTime[from] < 2 then
-		return
+	if data.sendingTo == from then
+		data.sending = ""
+		data.sendingTo = ""
+		data.sendingStep = 0
+	end
+
+	local flag = false
+	while not flag do
+		flag = true
+		for _, i in ipairs(data.tosend) do
+			if i.to == from then
+				table.remove(data.tosend, _)
+				flag = false
+				break
+			end
+		end
 	end
 
 	if #(data.recvList[from]) == 3 then
@@ -226,6 +248,12 @@ playerSpoken = function(from, to, content, fromYou, toYou, groupsent, senttime)
 		return
 	end
 
+	for _, i in ipairs(data.outoftimeKnown) do
+		if i == from then
+			return
+		end
+	end
+
 	if toYou then
 		data.recvTime[from] = senttime
 		talk(from, content)
@@ -238,15 +266,24 @@ tlReceive = function(value, sending, from)
 	if (value == 100000) or (value == 40002) then
 		toSend = sending
 		toSend = string.gsub(toSend, "%s", "")
-		if toSend == data.lastSent then
+		if toSend == data.lastSent[from] then
 			toSend = getStringFromBase("senddup")
 		end
 	elseif value == 40004 then
 		toSend = getStringFromBase("outoftime")
-		if not data.outoftimeRegistered then
+		if not data.outoftime then
+			data.outoftimeDay = os.date("*t").day
 			me:addTimer(consts.outoftimeTimerId, consts.outoftimeTimeout)
-			data.outoftimeRegistered = true
+			data.outoftime = true
 		end
+
+		local contains = false
+		for _, i in ipairs(data.outoftimeKnown) do
+			if i == from then
+				return
+			end
+		end
+		table.insert(data.outoftimeKnown, from)
 	else
 		-- how to qDebug()????
 	end
@@ -262,8 +299,35 @@ timeout = function(timerid)
 	if (timerid == consts.operationTimerId) then
 		sendingstep()
 	elseif (timerid == consts.outoftimeTimerId) then
-		me:prepareExit()
+		local dt = os.date("*t")
+		me:debugOutput("outoftimeTimerId " .. dt.day .. " " .. dt.hour .. " " .. dt.min.. " " .. dt.sec)
+		local revive = false
+		if (dt.day == 1) or (dt.day > data.outoftimeDay) then
+			if dt.hour >= 1 then
+				revive = true
+			elseif dt.min > 55 then
+				revive = true
+			elseif dt.min > 5 then
+				revive = (math.random(500) == 1)
+			end
+		end
+
+		if revive then
+			data.outoftime = false
+			data.outoftimeDay = 0
+			data.outoftimeKnown = {}
+			if data.speakingTo ~= "" then
+				for n, _ in ipairs(data.lastSent) do
+					if _ then
+						send(n, getStringFromBase("revive"))
+					end
+				end
+			end
+		else
+			me:addTimer(consts.outoftimeTimerId, consts.outoftimeTimeout)
+		end
 	end
 end
 
+math.randomseed(os.time())
 me:addTimer(consts.operationTimerId, 100)
