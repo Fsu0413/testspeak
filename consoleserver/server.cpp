@@ -135,6 +135,16 @@ public:
             writeJsonDocument(to, doc);
     }
 
+    void heartbeatFunc(QTcpSocket *socket, const QJsonObject &content)
+    {
+        (void)content;
+        QJsonObject ob;
+        ob[QStringLiteral("protocolValue")] = int(CP_Zero);
+
+        QJsonDocument doc(ob);
+        writeJsonDocument(socket, doc);
+    }
+
 public slots:
     void incomingConnection()
     {
@@ -158,9 +168,12 @@ public slots:
             if (doc.isObject()) {
                 int protocolValue = doc.object().value(QStringLiteral("protocolValue")).toInt();
                 qDebug() << socket->peerAddress().toString() << "," << socket->peerPort() << "sent protocol value" << protocolValue;
-                if (protocolValue > SP_Zero && protocolValue < SP_Max) {
+                if (protocolValue >= SP_Zero && protocolValue < SP_Max) {
                     QJsonObject content = doc.object();
-                    (this->*(ServerFunctions[protocolValue]))(socket, content);
+                    auto func = ServerFunctions[protocolValue];
+
+                    if (func != nullptr)
+                        (this->*func)(socket, content);
                 }
             }
         }
@@ -187,7 +200,7 @@ public slots:
     }
 };
 
-const ServerImpl::ServerFunction ServerImpl::ServerFunctions[SP_Max] = {nullptr, &ServerImpl::signInFunc, &ServerImpl::queryFunc, &ServerImpl::speakFunc};
+const ServerImpl::ServerFunction ServerImpl::ServerFunctions[SP_Max] = {&ServerImpl::heartbeatFunc, &ServerImpl::signInFunc, &ServerImpl::queryFunc, &ServerImpl::speakFunc};
 
 Server::Server()
 {
