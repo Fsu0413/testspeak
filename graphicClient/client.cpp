@@ -8,6 +8,7 @@
 #include <QMap>
 #include <QPointer>
 #include <QTcpSocket>
+#include <QTimer>
 
 QPointer<QTcpSocket> socket;
 
@@ -17,7 +18,7 @@ extern QVariantMap currentTlset;
 QString selfName;
 
 const Client::ClientFunction Client::ClientFunctions[CP_Max]
-    = {nullptr, &Client::notifiedSignedIn, &Client::notifiedSignedOut, &Client::notifiedQueryResult, &Client::notifiedSpoken};
+    = {&Client::notifiedHeartBeat, &Client::notifiedSignedIn, &Client::notifiedSignedOut, &Client::notifiedQueryResult, &Client::notifiedSpoken};
 
 Client::Client(QObject *parent)
     : QObject(parent)
@@ -47,6 +48,12 @@ void Client::connectToHost(const QString &host, int port)
 void Client::disconnectFromHost()
 {
     socket->disconnectFromHost();
+}
+
+void Client::notifiedHeartBeat(const QJsonObject &contents)
+{
+    (void)contents;
+    qDebug() << "heartbeat";
 }
 
 void Client::notifiedSignedIn(const QJsonObject &contents)
@@ -110,6 +117,12 @@ void Client::signIn()
         QJsonDocument doc2(ob2);
         writeJsonDocument(doc2);
     }
+
+    QTimer *heartbeatTimer = new QTimer(this);
+    heartbeatTimer->setInterval(5000);
+    heartbeatTimer->setSingleShot(false);
+    connect(heartbeatTimer, &QTimer::timeout, this, &Client::sendHeartBeat);
+    heartbeatTimer->start();
 }
 
 void Client::socketReadyRead()
@@ -119,9 +132,11 @@ void Client::socketReadyRead()
         QJsonDocument doc = QJsonDocument::fromJson(line);
         if (doc.isObject()) {
             int protocolValue = doc.object().value(QStringLiteral("protocolValue")).toInt();
-            if (protocolValue > CP_Zero && protocolValue < CP_Max) {
+            if (protocolValue >= CP_Zero && protocolValue < CP_Max) {
                 QJsonObject content = doc.object();
-                (this->*(ClientFunctions[protocolValue]))(content);
+                auto func = ClientFunctions[protocolValue];
+                if (func != nullptr)
+                    (this->*func)(content);
             }
         }
     }
@@ -135,6 +150,14 @@ void Client::speak(QString to, QString content)
         ob["to"] = to;
     ob["content"] = content;
     ob["protocolValue"] = int(SP_Speak);
+    QJsonDocument doc(ob);
+    writeJsonDocument(doc);
+}
+
+void Client::sendHeartBeat()
+{
+    QJsonObject ob;
+    ob["protocolValue"] = int(SP_Zero);
     QJsonDocument doc(ob);
     writeJsonDocument(doc);
 }

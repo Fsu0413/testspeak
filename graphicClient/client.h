@@ -43,6 +43,7 @@ public:
     void connectToHost(const QString &host, int port);
     void disconnectFromHost();
 
+    void notifiedHeartBeat(const QJsonObject &contents);
     void notifiedSignedIn(const QJsonObject &contents);
     void notifiedSignedOut(const QJsonObject &contents);
     void notifiedQueryResult(const QJsonObject &contents);
@@ -53,6 +54,8 @@ public slots:
     void socketReadyRead();
     void queryPlayerDetail(QString name);
     void speak(QString to, QString content);
+
+    void sendHeartBeat();
 
 signals:
     void addPlayer(QString name);
