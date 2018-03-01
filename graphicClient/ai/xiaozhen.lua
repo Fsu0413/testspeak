@@ -173,7 +173,7 @@ sendTo = function(to, content)
 	if not to then to = "all" end
 	me:debugOutput("sendTo".. to .. content)
 	
-	if (data.currentViewing.name == to) and (data.sendingStep == 102) then
+	if (data.currentViewing.name == to) and (data.sendingStep == 102) and (not data.currentViewing.cancel) then
 		data.currentViewing.content = content
 	else
 		local x = {
@@ -238,7 +238,7 @@ local judgeIgnore = function()
 	return true
 end
 
-	if (data.sendingStep == 102) and (data.currentViewing.name == from) then
+	if (data.sendingStep == 102) and (data.currentViewing.name == from) and (not data.currentViewing.cancel) then
 		if not judgeIgnore() then
 			data.currentViewing.cancel = true
 		else
@@ -276,7 +276,7 @@ AiCommon.Callbacks.messageReceived = function(from)
 end
 
 AiCommon.Callbacks.messageDetail = function(detail)
-local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, senttime)
+local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtime)
 	me:debugOutput("playerSpoken1 "..from..content)
 
 	if fromYou then
@@ -291,18 +291,18 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, senttim
 
 	if toYou then
 		local recvContent = data.recvContent[from]
-		if recvContent and (recvContent.time == senttime) and (recvContent.content == content) then
+		if recvContent and (recvContent.time == sendtime) and (recvContent.content == content) then
 			return
 		end
 		data.recvContent[from] = {
-			["time"] = senttime,
+			["time"] = sendtime,
 			["content"] = content
 		}
 		talk(from, content)
 		return from
 	end
 end
-	if (data.sendingStep == 102) and ((data.currentViewing.name == detail.from) or (data.currentViewing.name == "all")) then
+	if (data.sendingStep == 102) and ((data.currentViewing.name == detail.from) or (data.currentViewing.name == "all")) and (not data.currentViewing.cancel) then
 		local willSpeak = playerSpoken1(detail.from, detail.content, detail.fromYou, detail.toYou, detail.groupSent, detail.time)
 		if not willSpeak then
 			if not data.currentViewing.content then
@@ -358,7 +358,7 @@ end
 	local toSend = tlReceive1(value, sending, from)
 	if toSend then
 		send(from, toSend)
-	elseif (data.sendingStep == 102) and (data.currentViewing.name == from) then
+	elseif (data.sendingStep == 102) and (data.currentViewing.name == from) and (not data.currentViewing.cancel) then
 		data.currentViewing.cancel = true
 	end
 end
