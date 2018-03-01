@@ -39,7 +39,7 @@ base = {
 		"还记得我是男生还是女生么？"
 	},
 	["changemale"] = {
-		"顺便跟你说说，俺是大帅哥！",
+		"顺便跟你说说，俺是个帅哥！",
 		"稍微向你透露下，我是男生",
 	},
 	["changefemale"] = {
@@ -55,11 +55,6 @@ base = {
 		"你叫什么来着？",
 		"你多大了？",
 		"你是男生还是女生啊？"
-	},
-	["recvdup"] = {
-		"你是在自言自语吗？",
-		"重要的事情不用说三遍啦。",
-		"复读机，鉴定完毕。"
 	},
 	["outoftime"] = {
 		"今天说了太多，次数用完啦。。。不得不下线了，明天继续！",
@@ -77,13 +72,6 @@ end
 
 sendingstep = function()
 	local timer = 1
-	
-	if data.sendingStep ~= 0 then
-		me:debugOutput("sendingstep = " .. tostring(data.sendingStep))
-		for a,b in pairs(data.currentViewing) do
-			me:debugOutput(tostring(a) .. " = " .. tostring(b))
-		end
-	end
 
 	if data.sendingStep == 0 then
 		if #data.toview ~= 0 then
@@ -311,7 +299,7 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, senttim
 			["content"] = content
 		}
 		talk(from, content)
-		return true
+		return from
 	end
 end
 	if (data.sendingStep == 102) and ((data.currentViewing.name == detail.from) or (data.currentViewing.name == "all")) then
@@ -320,8 +308,13 @@ end
 			if not data.currentViewing.content then
 				data.currentViewing.cancel = true
 			end
-		elseif data.currentViewing.content then
-			data.currentViewing.content = nil
+		else
+			if data.currentViewing.content then
+				data.currentViewing.content = nil
+			end
+			if willSpeak ~= data.currentViewing.name then
+				data.currentViewing.cancel = true
+			end
 		end
 	else
 		playerSpoken1(detail.from, detail.content, detail.fromYou, detail.toYou, detail.groupSent, detail.time)
