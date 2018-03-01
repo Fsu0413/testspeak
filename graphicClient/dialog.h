@@ -13,6 +13,35 @@ class QLineEdit;
 class QPushButton;
 class Client;
 
+struct SpeakDetail
+{
+    QString from;
+    bool fromYou;
+    bool toYou;
+    bool groupSent;
+    quint32 time;
+    QString content;
+};
+
+enum SpeakRole
+{
+    SpeakRole__QtUserRole = Qt::UserRole,
+
+    FromRole,
+    FromYouRole,
+    ToYouRole,
+    GroupSentRole,
+    TimeRole,
+    ContentRole,
+};
+
+enum PlayerRole
+{
+    PlayerRole__QtUserRole = Qt::UserRole,
+
+    HasUnreadMessageRole
+};
+
 class Dialog : public QWidget
 {
     Q_OBJECT
@@ -28,7 +57,7 @@ public:
 
     Client *client;
 
-    QMap<QString, QStringList *> speakMap;
+    QMap<QString, QList<SpeakDetail> *> speakMap;
 
 public slots:
     void addPlayer(QString name);

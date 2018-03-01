@@ -157,22 +157,13 @@ void Dialog::playerDetail(QJsonObject)
 
 void Dialog::playerSpoken(QString from, QString to, QString content, bool fromYou, bool toYou, bool groupsent, quint32 time)
 {
-    if (fromYou)
-        from = tr("you");
-
-    if (toYou)
-        to = tr("you");
-    else if (groupsent)
-        to = tr("__ALLPLAYERS__");
-
-    QString timestr;
-    if (time != 0)
-        timestr = QDateTime::fromTime_t(time).time().toString();
-    else
-        timestr = "sometime";
-
-    QString x = tr("%1 said to %2 at %3: ").arg(from).arg(to).arg(timestr);
-    x.append(content);
+    SpeakDetail x;
+    x.content = content;
+    x.from = from;
+    x.fromYou = fromYou;
+    x.toYou = toYou;
+    x.groupSent = groupsent;
+    x.time = time;
 
     QString relatedPerson;
     if (groupsent)
@@ -183,15 +174,19 @@ void Dialog::playerSpoken(QString from, QString to, QString content, bool fromYo
         relatedPerson = from;
 
     if (!speakMap.contains(relatedPerson))
-        speakMap[relatedPerson] = new QStringList;
+        speakMap[relatedPerson] = new QList<SpeakDetail>;
 
     speakMap[relatedPerson]->append(x);
     if (speakMap[relatedPerson]->length() > 100)
         speakMap[relatedPerson]->takeFirst();
 
-    foreach (QListWidgetItem *item, userNames->findItems(relatedPerson, Qt::MatchExactly)) {
-        if (!item->isSelected())
-            item->setBackgroundColor(qRgb(255, 0, 0));
+    if (!fromYou) {
+        foreach (QListWidgetItem *item, userNames->findItems(relatedPerson, Qt::MatchExactly)) {
+            if (!item->isSelected()) {
+                item->setBackgroundColor(qRgb(255, 0, 0));
+                item->setData(HasUnreadMessageRole, true);
+            }
+        }
     }
 
     updateList();
@@ -216,7 +211,7 @@ void Dialog::send()
 void Dialog::userNameChanged(QListWidgetItem *current, QListWidgetItem *)
 {
     current->setBackgroundColor(qRgb(255, 255, 255));
-    QString currentname = current->text();
+    current->setData(HasUnreadMessageRole, false);
     updateList();
 }
 
@@ -242,6 +237,26 @@ void Dialog::updateList()
     if (!speakMap.contains(name))
         return;
 
-    listWidget->addItems(*(speakMap[name]));
+    QList<SpeakDetail> *details = speakMap[name];
+    foreach (const SpeakDetail &detail, *details) {
+        QString timestr;
+        if (detail.time != 0)
+            timestr = QDateTime::fromTime_t(detail.time).time().toString();
+        else
+            timestr = "at sometime";
+
+        QString x = QString("%1 %2:\n%3").arg(detail.from).arg(timestr).arg(detail.content);
+        QListWidgetItem *item = new QListWidgetItem(x);
+        item->setTextColor(detail.fromYou ? Qt::blue : Qt::magenta);
+
+        item->setData(FromRole, detail.from);
+        item->setData(FromYouRole, detail.fromYou);
+        item->setData(TimeRole, qlonglong(detail.time));
+        item->setData(ContentRole, detail.content);
+        item->setData(ToYouRole, detail.toYou);
+        item->setData(GroupSentRole, detail.groupSent);
+
+        listWidget->addItem(item);
+    }
     listWidget->scrollToBottom();
 }

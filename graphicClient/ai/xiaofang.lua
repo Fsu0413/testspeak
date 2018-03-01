@@ -310,7 +310,6 @@ tlReceive = function(value, sending, from)
 			data.outoftime = true
 		end
 
-		local contains = false
 		for _, i in ipairs(data.outoftimeKnown) do
 			if i == from then
 				return
@@ -335,7 +334,7 @@ timeout = function(timerid)
 		local dt = os.date("*t")
 		me:debugOutput("outoftimeTimerId " .. dt.day .. " " .. dt.hour .. " " .. dt.min.. " " .. dt.sec)
 		local revive = false
-		if (dt.day == 1) or (dt.day > data.outoftimeDay) then
+		if dt.day ~= data.outoftimeDay then
 			if dt.hour >= 1 then
 				revive = true
 			elseif dt.min > 55 then

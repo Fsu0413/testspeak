@@ -3337,6 +3337,121 @@ fail:
 }
 
 
+static int _wrap_Ai_newMessagePlayers(lua_State* L) {
+  int SWIG_arg = 0;
+  Ai *arg1 = (Ai *) 0 ;
+  QStringList result;
+  
+  SWIG_check_num_args("Ai::newMessagePlayers",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::newMessagePlayers",1,"Ai *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
+    SWIG_fail_ptr("Ai_newMessagePlayers",1,SWIGTYPE_p_Ai);
+  }
+  
+  result = (arg1)->newMessagePlayers();
+  
+  lua_createtable(L, (&result)->length(), 0);
+  
+  for (int i = 0; i < (&result)->length(); i++) {
+    QString str = (&result)->at(i);
+    lua_pushstring(L, str.toUtf8().constData());
+    lua_rawseti(L, -2, i + 1);
+  }
+  
+  SWIG_arg++;
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_Ai_onlinePlayers(lua_State* L) {
+  int SWIG_arg = 0;
+  Ai *arg1 = (Ai *) 0 ;
+  QStringList result;
+  
+  SWIG_check_num_args("Ai::onlinePlayers",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::onlinePlayers",1,"Ai *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
+    SWIG_fail_ptr("Ai_onlinePlayers",1,SWIGTYPE_p_Ai);
+  }
+  
+  result = (arg1)->onlinePlayers();
+  
+  lua_createtable(L, (&result)->length(), 0);
+  
+  for (int i = 0; i < (&result)->length(); i++) {
+    QString str = (&result)->at(i);
+    lua_pushstring(L, str.toUtf8().constData());
+    lua_rawseti(L, -2, i + 1);
+  }
+  
+  SWIG_arg++;
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_Ai_getNewestSpokenMessage(lua_State* L) {
+  int SWIG_arg = 0;
+  Ai *arg1 = (Ai *) 0 ;
+  SpeakDetail result;
+  
+  SWIG_check_num_args("Ai::getNewestSpokenMessage",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::getNewestSpokenMessage",1,"Ai *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
+    SWIG_fail_ptr("Ai_getNewestSpokenMessage",1,SWIGTYPE_p_Ai);
+  }
+  
+  result = (arg1)->getNewestSpokenMessage();
+  
+  lua_createtable(L, 0, 6);
+  
+  lua_pushstring(L, (&result)->from.toUtf8().constData());
+  lua_setfield(L, -2, "from");
+  
+  lua_pushboolean(L, (&result)->fromYou);
+  lua_setfield(L, -2, "fromYou");
+  
+  lua_pushboolean(L, (&result)->toYou);
+  lua_setfield(L, -2, "toYou");
+  
+  lua_pushboolean(L, (&result)->groupSent);
+  lua_setfield(L, -2, "groupSent");
+  
+  lua_pushunsigned(L, (&result)->time);
+  lua_setfield(L, -2, "time");
+  
+  lua_pushstring(L, (&result)->content.toUtf8().constData());
+  lua_setfield(L, -2, "content");
+  
+  SWIG_arg++;
+  
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static void swig_delete_Ai(void *obj) {
 Ai *arg1 = (Ai *) obj;
 delete arg1;
@@ -3369,6 +3484,9 @@ static swig_lua_method swig_Ai_methods[]= {
     { "debugOutput", _wrap_Ai_debugOutput},
     { "prepareExit", _wrap_Ai_prepareExit},
     { "firstUnreadMessageFrom", _wrap_Ai_firstUnreadMessageFrom},
+    { "newMessagePlayers", _wrap_Ai_newMessagePlayers},
+    { "onlinePlayers", _wrap_Ai_onlinePlayers},
+    { "getNewestSpokenMessage", _wrap_Ai_getNewestSpokenMessage},
     {0,0}
 };
 static swig_lua_method swig_Ai_meta[] = {
@@ -3404,6 +3522,13 @@ static swig_lua_attribute swig_SwigModule_attributes[] = {
     {0,0,0}
 };
 static swig_lua_const_info swig_SwigModule_constants[]= {
+    {SWIG_LUA_CONSTTAB_INT("FromRole", FromRole)},
+    {SWIG_LUA_CONSTTAB_INT("FromYouRole", FromYouRole)},
+    {SWIG_LUA_CONSTTAB_INT("ToYouRole", ToYouRole)},
+    {SWIG_LUA_CONSTTAB_INT("GroupSentRole", GroupSentRole)},
+    {SWIG_LUA_CONSTTAB_INT("TimeRole", TimeRole)},
+    {SWIG_LUA_CONSTTAB_INT("ContentRole", ContentRole)},
+    {SWIG_LUA_CONSTTAB_INT("HasUnreadMessageRole", HasUnreadMessageRole)},
     {0,0,0,0,0,0}
 };
 static swig_lua_method swig_SwigModule_methods[]= {
