@@ -1,9 +1,10 @@
 
 #include "Ai.h"
 #include "client.h"
-#include "dialog.h"
 #include "lua.hpp"
+
 #include <QApplication>
+#include <QDir>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
@@ -24,6 +25,8 @@ extern "C" {
 void luaopen_Ai(lua_State *l);
 }
 
+const QString packagePathStr = "package.path = package.path .. \";%1/ai/lib/?.lua\"";
+
 void setMe(lua_State *l, Ai *ai);
 
 Ai::Ai(Client *client, Dialog *parent)
@@ -40,6 +43,10 @@ Ai::Ai(Client *client, Dialog *parent)
 
     l = luaL_newstate();
     luaL_openlibs(l);
+
+    QString packagePathStrFormatted = packagePathStr.arg(QDir::currentPath());
+    luaL_dostring(l, packagePathStrFormatted.toUtf8().constData());
+
     luaopen_Ai(l);
     setMe(l, this);
 
@@ -195,12 +202,65 @@ QString Ai::firstUnreadMessageFrom()
     for (int i = 0; i < dialog->userNames->count(); ++i) {
         auto item = dialog->userNames->item(i);
         if (item != nullptr) {
-            if (item->backgroundColor() == qRgb(255, 0, 0))
+            if (item->data(HasUnreadMessageRole).toBool())
                 return item->text();
         }
     }
 
     return QString();
+}
+
+QStringList Ai::newMessagePlayers()
+{
+    QStringList r;
+    for (int i = 0; i < dialog->userNames->count(); ++i) {
+        auto item = dialog->userNames->item(i);
+        if (item != nullptr) {
+            if (item->data(HasUnreadMessageRole).toBool())
+                r.append(item->text());
+        }
+    }
+
+    return r;
+}
+
+QStringList Ai::onlinePlayers()
+{
+    QStringList r;
+    for (int i = 0; i < dialog->userNames->count(); ++i) {
+        auto item = dialog->userNames->item(i);
+        if (item != nullptr) {
+            // if (item->text() != "all")
+            r.append(item->text());
+        }
+    }
+
+    return r;
+}
+
+SpeakDetail Ai::getNewestSpokenMessage()
+{
+    SpeakDetail detail;
+    detail.fromYou = false;
+    detail.toYou = false;
+    detail.groupSent = false;
+    detail.time = 0;
+
+    if (dialog->listWidget->count() == 0)
+        return detail;
+
+    auto item = dialog->listWidget->item(dialog->listWidget->count() - 1);
+    if (item == nullptr)
+        return detail;
+
+    detail.from = item->data(FromRole).toString();
+    detail.fromYou = item->data(FromYouRole).toBool();
+    detail.toYou = item->data(ToYouRole).toBool();
+    detail.groupSent = item->data(GroupSentRole).toBool();
+    detail.time = item->data(TimeRole).toULongLong();
+    detail.content = item->data(ContentRole).toString();
+
+    return detail;
 }
 
 void Ai::addPlayer(QString name)

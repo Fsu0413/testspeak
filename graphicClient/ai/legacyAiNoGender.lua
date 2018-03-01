@@ -1,11 +1,13 @@
 
+local AiCommon = require("AiCommon")
+
 data = {
 	["repeatTime"] = 0,
 	["banned"] = {},
 
 	["speakingTo"] = "",
 	["groupSpoken"] = {},
-	["spokenToMe"] = {},
+	["recvContent"] = {},
 
 	["lastSent"] = "",
 	["lastRecv"] = "",
@@ -23,18 +25,20 @@ data = {
 
 	["tosend"] = {},
 	["sendpressed"] = false,
+	["toview"] = {},
+	["currentViewing"] = {},
 }
 
 consts = {
-	["findPersonTimerId"] = 1,
+	["findPersonTimerId"] = AiCommon.UserTimerId + 1,
 	["findPersonTimeout"] = 200000,
 
-	["timeoutTimerId"] = 2,
+	["timeoutTimerId"] = AiCommon.UserTimerId + 2,
 	["timeoutTimeout"] = 300000,
 
-	["operationTimerId"] = 3,
+	["operationTimerId"] = AiCommon.UserTimerId + 3,
 
-	["outoftimeTimerId"] = 4,
+	["outoftimeTimerId"] = AiCommon.UserTimerId + 4,
 	["outoftimeTimeout"] = 1000,
 
 	["thinkdelay"] = 5000,
@@ -107,60 +111,78 @@ end
 sendingstep = function()
 	local timer = 1
 
-	if (data.sendingStep ~= 5) and data.sendpressed then
-		me:sendRelease()
-	end
-
 	if data.sendingStep == 0 then
-		if #data.tosend ~= 0 then
-			local tosend = data.tosend[1]
-			data.sendingTo = tosend.to
-			data.sending = tosend.content
-			data.sendingStep = 1
-			timer = consts.clickDelay
-			table.remove(data.tosend, 1)
+		if #data.toview ~= 0 then
+			local toview = data.toview[1]
+			data.currentViewing = toview
+			data.sendingStep = 101
+			timer = consts.sendDelay
+			table.remove(data.toview, 1)
+		end
+	elseif data.sendingStep == 3 then
+		if data.currentViewing.cancel then
+			data.currentViewing = {}
+			data.sendingStep = 0
+			data.sending = ""
+			data.typed = ""
+			me:setText("")
+			timer = consts.sendDelay
 		else
-			local x = me:firstUnreadMessageFrom()
-			if x and (x ~= "") and (math.random(20) == 1) then
-				data.sendingStep = 101
-				timer = consts.clickDelay
+			if data.sending == "" then
+				data.sendingStep = 4
+				timer = consts.sendDelay
+			else
+				data.typed = data.typed .. me:getFirstChar(data.sending)
+				data.sending = me:removeFirstChar(data.sending)
+				me:setText(data.typed)
+				timer = consts.typeDelay
 			end
 		end
-	elseif data.sendingStep == 1 then
-		-- me:popupNameCombo()
-		data.sendingStep = 2
-		timer = consts.clickDelay
-	elseif data.sendingStep == 2 then
-		me:setNameCombo(data.sendingTo)
-		data.sendingStep = 3
-		data.typed = ""
-		timer = consts.thinkdelay
-	elseif data.sendingStep == 3 then
-		if data.sending == "" then
-			data.sendingStep = 4
+	elseif data.sendingStep == 4 then
+		if data.currentViewing.cancel then
+			data.currentViewing = {}
+			data.sendingStep = 0
+			data.sending = ""
+			data.typed = ""
+			me:setText("")
 			timer = consts.sendDelay
 		else
-			data.typed = data.typed .. me:getFirstChar(data.sending)
-			data.sending = me:removeFirstChar(data.sending)
-			me:setText(data.typed)
-			timer = consts.typeDelay
+			me:sendPress()
+			data.sendpressed = true
+			data.sendingStep = 5
+			timer = consts.clickDelay
 		end
-	elseif data.sendingStep == 4 then
-		me:sendPress()
-		data.sendpressed = true
-		data.sendingStep = 5
-		timer = consts.clickDelay
 	elseif data.sendingStep == 5 then
-		me:sendClick()
-		data.sendpressed = false
-		data.sendingStep = 0
-		timer = consts.sendDelay
-	elseif data.sendingStep == 101 then
-		local x = me:firstUnreadMessageFrom()
-		if x and (x ~= "") then
+		if data.currentViewing.cancel then
+			data.currentViewing = {}
+			me:sendRelease()
 			data.sendingStep = 0
-			me:setNameCombo(x)
+			data.sending = ""
+			data.typed = ""
+			me:setText("")
 			timer = consts.sendDelay
+		else
+			me:sendClick()
+			data.sendpressed = false
+			data.sendingStep = 0
+			data.currentViewing = {}
+			timer = consts.sendDelay
+		end
+	elseif data.sendingStep == 101 then
+		data.sendingStep = 102
+		me:setNameCombo(data.currentViewing.name)
+		timer = consts.sendDelay
+	elseif data.sendingStep == 102 then
+		if data.currentViewing.cancel then
+			data.currentViewing = {}
+			data.sendingStep = 0
+			timer = consts.sendDelay
+		elseif data.currentViewing.content then
+			data.sending = data.currentViewing.content
+			data.typed = ""
+			me:setText("")
+			data.sendingStep = 3
+			timer = consts.thinkdelay
 		end
 	end
 
@@ -171,16 +193,33 @@ sendingstep = function()
 	me:addTimer(consts.operationTimerId, timer)
 end
 
+cancelAllPendingSend = function(to)
+	local exist = true
+	while exist do
+		exist = false
+		for _, p in ipairs(data.toview) do
+			if p.name == to then
+				table.remove(data.toview, _)
+				exist = true
+				break
+			end
+		end
+	end
+end
+
 sendTo = function(to, content)
 	if not to then to = "all" end
 	me:debugOutput("sendTo".. to .. content)
-
-	local tosend = {
-		["to"] = to,
-		["content"] = content
-	}
-
-	table.insert(data.tosend, tosend)
+	
+	if (data.currentViewing.name == to) and (data.sendingStep == 102) and (not data.currentViewing.cancel) then
+		data.currentViewing.content = content
+	else
+		local x = {
+			["name"] = to,
+			["content"] = content,
+		}
+		table.insert(data.toview, x)
+	end
 end
 
 getStringFromBase = function(baseName)
@@ -220,22 +259,10 @@ talk = function(content)
 	me:killTimer(consts.timeoutTimerId)
 	data.timeoutTime = 0
 
-	if data.sendingTo == data.speakingTo then
-		data.sending = ""
-		data.sendingTo = ""
-		data.sendingStep = 0
-	end
-
-	local flag = false
-	while not flag do
-		flag = true
-		for _, i in ipairs(data.tosend) do
-			if i.to == data.speakingTo then
-				table.remove(data.tosend, _)
-				flag = false
-				break
-			end
-		end
+	cancelAllPendingSend(from)
+	
+	if (data.sendingStep ~= 102) and (data.currentViewing.name == from) then
+		data.currentViewing.cancel = true
 	end
 
 	if content == data.lastRecv then
@@ -254,35 +281,25 @@ talk = function(content)
 	end
 end
 
-addPlayer = function(name)
-
-end
-
-removePlayer = function(name)
+AiCommon.Callbacks.removePlayer = function(name)
 	me:debugOutput("removePlayer"..name)
 	if data.speakingTo == name then
 		data.speakingTo = ""
 		me:killTimer(consts.timeoutTimerId)
 		data.timeoutTime = 0
 	end
-
-	if data.sendingTo == name then
-		data.sending = ""
-		data.sendingTo = ""
-		data.sendingStep = 0
+	
+	data.recvContent[name] = nil
+	
+	if data.speakingTo == name then
+		data.speakingTo = ""
+	end
+	
+	if data.currentViewing.name == name then
+		data.currentViewing.cancel = true
 	end
 
-	local flag = false
-	while not flag do
-		flag = true
-		for _, i in ipairs(data.tosend) do
-			if i.to == name then
-				table.remove(data.tosend, _)
-				flag = false
-				break
-			end
-		end
-	end
+	cancelAllPendingSend(name)
 
 	flag = false
 	while not flag do
@@ -297,36 +314,23 @@ removePlayer = function(name)
 	end
 end
 
-playerDetail = function(obname, obgender)
-	me:debugOutput("playerDetail"..obname..obgender)
-	if (data.spokenToMe[obname] ~= nil) and (data.speakingTo == "") then
-		--if (me:gender() ~= obgender) then
-			data.speakingTo = obname
-			talk(data.spokenToMe[obname])
-			data.spokenToMe = {}
-			data.groupSpoken = {}
-		--else
-		--  sendTo(obname, getStringFromBase("g" .. me:gender()))
-		--  data.spokenToMe[obname] = nil
-		--end
+AiCommon.Callbacks.messageReceived = function(from)
+	local toview = {["name"] = from}
+
+	if from == "all" then
+		table.insert(data.toview, toview)
 	else
-		for _, n in ipairs(data.groupSpoken) do
-			if (n == obname) and (data.speakingTo == "") then
-			--  if (me:gender() ~= obgender) then
-					local sending = getStringFromBase("greet")
-					sending = string.gsub(sending, "__AIREPLACE__", me:name())
-					sendTo(obname, sending)
-			--  else
-			--      table.remove(data.groupSpoken, _)
-			--      break
-			--  end
-			end
+		if from == data.speakingTo then
+			table.insert(data.toview, 1, toview)
+		else
+			table.insert(data.toview, toview)
 		end
 	end
 end
 
-playerSpoken = function(from, to, content, fromYou, toYou, groupsent)
-	me:debugOutput("playerSpoken"..from..to..content)
+AiCommon.Callbacks.messageDetail = function(detail)
+local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtime)
+	me:debugOutput("playerSpoken"..from..content)
 	if fromYou then return end
 
 	for _, i in ipairs(data.banned) do
@@ -351,21 +355,55 @@ playerSpoken = function(from, to, content, fromYou, toYou, groupsent)
 		end
 		if not flag then
 			table.insert(data.groupSpoken, from)
+			if data.speakingTo == "" then
+				local sending = getStringFromBase("greet")
+				sending = string.gsub(sending, "__AIREPLACE__", me:name())
+				sendTo(from, sending)
+				return from
+			end
 		end
-		me:queryPlayer(from)
+	elseif toYou then 
+		local recvContent = data.recvContent[from]
+		if recvContent and (recvContent.time == sendtime) and (recvContent.content == content) then
+			return
+		end
+		data.recvContent[from] = {
+			["time"] = sendtime,
+			["content"] = content
+		}
+		
+		if data.speakingTo == "" then
+			data.speakingTo = from
+			talk(content)
+			data.groupSpoken = {}
+			return from
+		elseif from == data.speakingTo then
+			talk(content)
+			return from
+		end
 	end
-
-	if toYou and (data.speakingTo == "") then
-		data.spokenToMe[from] = content
-		me:queryPlayer(from)
-	end
-
-	if toYou and (from == data.speakingTo) then
-		talk(content)
+end
+	if (data.sendingStep == 102) and ((data.currentViewing.name == detail.from) or (data.currentViewing.name == "all")) and (not data.currentViewing.cancel) then
+		local willSpeak = playerSpoken1(detail.from, detail.content, detail.fromYou, detail.toYou, detail.groupSent, detail.time)
+		if not willSpeak then
+			if not data.currentViewing.content then
+				data.currentViewing.cancel = true
+			end
+		else
+			if data.currentViewing.content then
+				data.currentViewing.content = nil
+			end
+			if willSpeak ~= data.currentViewing.name then
+				data.currentViewing.cancel = true
+			end
+		end
+	else
+		playerSpoken1(detail.from, detail.content, detail.fromYou, detail.toYou, detail.groupSent, detail.time)
 	end
 end
 
 tlReceive = function(value, sending, from)
+local tlReceive1 = function(value, sending, from)
 	me:debugOutput("tlReceive" .. value .. sending)
 	local toSend = ""
 	if (value == 100000) or (value == 40002) then
@@ -382,7 +420,6 @@ tlReceive = function(value, sending, from)
 			data.outoftime = true
 		end
 
-		local contains = false
 		for _, i in ipairs(data.outoftimeKnown) do
 			if i == from then
 				return
@@ -397,7 +434,14 @@ tlReceive = function(value, sending, from)
 		toSend = getStringFromBase("change")
 	end
 
-	send(toSend)
+	return toSend
+end
+	local toSend = tlReceive1(value, sending, from)
+	if toSend then
+		send(toSend)
+	elseif (data.sendingStep == 102) and (data.currentViewing.name == from) and (not data.currentViewing.cancel) then
+		data.currentViewing.cancel = true
+	end
 end
 
 timeout = function(timerid)
@@ -419,7 +463,7 @@ timeout = function(timerid)
 		local dt = os.date("*t")
 		me:debugOutput("outoftimeTimerId " .. dt.day .. " " .. dt.hour .. " " .. dt.min.. " " .. dt.sec)
 		local revive = false
-		if (dt.day == 1) or (dt.day > data.outoftimeDay) then
+		if dt.day ~= data.outoftimeDay then
 			if dt.hour >= 1 then
 				revive = true
 			elseif dt.min > 55 then
@@ -439,6 +483,8 @@ timeout = function(timerid)
 		else
 			me:addTimer(consts.outoftimeTimerId, consts.outoftimeTimeout)
 		end
+	else
+		AiCommon.timeout(timerid)
 	end
 end
 

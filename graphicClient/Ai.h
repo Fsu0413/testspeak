@@ -1,6 +1,8 @@
 #ifndef AI_H
 #define AI_H
 
+#include "dialog.h"
+
 #include <QJsonObject>
 #include <QMap>
 #include <QObject>
@@ -8,7 +10,6 @@
 
 class QTimer;
 class QNetworkAccessManager;
-class Dialog;
 class Client;
 
 extern "C" {
@@ -54,6 +55,9 @@ public:
     void debugOutput(const QString &c);
     void prepareExit();
     QString firstUnreadMessageFrom();
+    QStringList newMessagePlayers();
+    QStringList onlinePlayers();
+    SpeakDetail getNewestSpokenMessage();
 
 public slots:
     void addPlayer(QString name);

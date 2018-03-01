@@ -8,6 +8,11 @@
 #include <QString>
 %}
 
+struct SpeakDetail;
+class QString;
+class Dialog;
+class Client;
+
 %naturalvar QString;
 
 %typemap(in,checkfn="lua_isstring") QString
@@ -40,9 +45,60 @@
 %typemap(in) QString &INOUT =const QString &;
 %typemap(argout) QString &INOUT = QString &OUTPUT;
 
-class QString;
-class Dialog;
-class Client;
+
+%naturalvar QStringList;
+
+%typemap(in, checkfn = "lua_istable") QStringList
+%{
+for (size_t i = 0; i < lua_rawlen(L, $input); i++) {
+    lua_rawgeti(L, $input, i + 1);
+    const char *elem = luaL_checkstring(L, -1);
+    $1 << elem;
+    lua_pop(L, 1);
+}
+%}
+
+%typemap(out) QStringList
+%{
+lua_createtable(L, $1.length(), 0);
+
+for (int i = 0; i < $1.length(); i++) {
+    QString str = $1.at(i);
+    lua_pushstring(L, str.toUtf8().constData());
+    lua_rawseti(L, -2, i + 1);
+}
+
+SWIG_arg++;
+%}
+
+%naturalvar SpeakDetail;
+
+%typemap(out) SpeakDetail
+%{
+lua_createtable(L, 0, 6);
+
+lua_pushstring(L, $1.from.toUtf8().constData());
+lua_setfield(L, -2, "from");
+
+lua_pushboolean(L, $1.fromYou);
+lua_setfield(L, -2, "fromYou");
+
+lua_pushboolean(L, $1.toYou);
+lua_setfield(L, -2, "toYou");
+
+lua_pushboolean(L, $1.groupSent);
+lua_setfield(L, -2, "groupSent");
+
+lua_pushunsigned(L, $1.time);
+lua_setfield(L, -2, "time");
+
+lua_pushstring(L, $1.content.toUtf8().constData());
+lua_setfield(L, -2, "content");
+
+SWIG_arg++;
+
+%}
+
 
 class Ai
 {
@@ -67,8 +123,31 @@ public:
     void debugOutput(const QString &c);
     void prepareExit();
     QString firstUnreadMessageFrom();
+	QStringList newMessagePlayers();
+    QStringList onlinePlayers();
+    SpeakDetail getNewestSpokenMessage();
+
 };
 
+
+enum SpeakRole
+{
+    // QtUserRole = Qt::UserRole,
+
+    FromRole,
+    FromYouRole,
+    ToYouRole,
+	GroupSentRole,
+    TimeRole,
+    ContentRole,
+};
+
+enum PlayerRole
+{
+    // PlayerRole__QtUserRole = Qt::UserRole,
+
+    HasUnreadMessageRole
+};
 
 %{
 
