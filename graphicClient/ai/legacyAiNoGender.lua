@@ -23,7 +23,6 @@ data = {
 	["typed"] = "",
 	["sendingTo"] = "",
 
-	["tosend"] = {},
 	["sendpressed"] = false,
 	["toview"] = {},
 	["currentViewing"] = {},
@@ -253,6 +252,7 @@ analyzeContent = function()
 	end
 	me:debugOutput("data.queryTl" .. data.speakingTo .. data.lastRecv)
 	me:queryTl(data.speakingTo, data.lastRecv)
+	return true
 end
 
 talk = function(content)
@@ -277,7 +277,7 @@ talk = function(content)
 	else
 		data.repeatTime = 0
 		data.lastRecv = content
-		analyzeContent()
+		return analyzeContent()
 	end
 end
 
@@ -291,17 +291,13 @@ AiCommon.Callbacks.removePlayer = function(name)
 	
 	data.recvContent[name] = nil
 	
-	if data.speakingTo == name then
-		data.speakingTo = ""
-	end
-	
 	if data.currentViewing.name == name then
 		data.currentViewing.cancel = true
 	end
 
 	cancelAllPendingSend(name)
 
-	flag = false
+	local flag = false
 	while not flag do
 		flag = true
 		for _, i in ipairs(data.banned) do
@@ -318,7 +314,11 @@ AiCommon.Callbacks.messageReceived = function(from)
 	local toview = {["name"] = from}
 
 	if from == "all" then
-		table.insert(data.toview, toview)
+		if data.speakingTo == "" then
+			table.insert(data.toview, 1, toview)
+		else
+			table.insert(data.toview, toview)
+		end
 	else
 		if from == data.speakingTo then
 			table.insert(data.toview, 1, toview)
@@ -355,12 +355,10 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtim
 		end
 		if not flag then
 			table.insert(data.groupSpoken, from)
-			if data.speakingTo == "" then
-				local sending = getStringFromBase("greet")
-				sending = string.gsub(sending, "__AIREPLACE__", me:name())
-				sendTo(from, sending)
-				return from
-			end
+			local sending = getStringFromBase("greet")
+			sending = string.gsub(sending, "__AIREPLACE__", me:name())
+			sendTo(from, sending)
+			return from
 		end
 	elseif toYou then 
 		local recvContent = data.recvContent[from]
@@ -374,23 +372,23 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtim
 		
 		if data.speakingTo == "" then
 			data.speakingTo = from
-			talk(content)
 			data.groupSpoken = {}
-			return from
+			local r = talk(content)
+			return from, r
 		elseif from == data.speakingTo then
-			talk(content)
-			return from
+			local r = talk(content)
+			return from, r
 		end
 	end
 end
 	if (data.sendingStep == 102) and ((data.currentViewing.name == detail.from) or (data.currentViewing.name == "all")) and (not data.currentViewing.cancel) then
-		local willSpeak = playerSpoken1(detail.from, detail.content, detail.fromYou, detail.toYou, detail.groupSent, detail.time)
+		local willSpeak, async = playerSpoken1(detail.from, detail.content, detail.fromYou, detail.toYou, detail.groupSent, detail.time)
 		if not willSpeak then
 			if not data.currentViewing.content then
 				data.currentViewing.cancel = true
 			end
 		else
-			if data.currentViewing.content then
+			if data.currentViewing.content and async then
 				data.currentViewing.content = nil
 			end
 			if willSpeak ~= data.currentViewing.name then

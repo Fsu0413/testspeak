@@ -2676,10 +2676,9 @@ SWIG_Lua_dostring(lua_State *L, const char *str) {
 /* -------- TYPES TABLE (BEGIN) -------- */
 
 #define SWIGTYPE_p_Ai swig_types[0]
-#define SWIGTYPE_p_Client swig_types[1]
-#define SWIGTYPE_p_Dialog swig_types[2]
-static swig_type_info *swig_types[4];
-static swig_module_info swig_module = {swig_types, 3, 0, 0, 0, 0};
+#define SWIGTYPE_p_Dialog swig_types[1]
+static swig_type_info *swig_types[3];
+static swig_module_info swig_module = {swig_types, 2, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -2715,24 +2714,17 @@ extern "C" {
 #endif
 static int _wrap_new_Ai(lua_State* L) {
   int SWIG_arg = 0;
-  Client *arg1 = (Client *) 0 ;
-  Dialog *arg2 = (Dialog *) 0 ;
+  Dialog *arg1 = (Dialog *) 0 ;
   Ai *result = 0 ;
   
-  SWIG_check_num_args("Ai::Ai",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::Ai",1,"Client *");
-  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Ai::Ai",2,"Dialog *");
+  SWIG_check_num_args("Ai::Ai",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::Ai",1,"Dialog *");
   
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Client,0))){
-    SWIG_fail_ptr("new_Ai",1,SWIGTYPE_p_Client);
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Dialog,0))){
+    SWIG_fail_ptr("new_Ai",1,SWIGTYPE_p_Dialog);
   }
   
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_Dialog,0))){
-    SWIG_fail_ptr("new_Ai",2,SWIGTYPE_p_Dialog);
-  }
-  
-  result = (Ai *)new Ai(arg1,arg2);
+  result = (Ai *)new Ai(arg1);
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_Ai,1); SWIG_arg++; 
   return SWIG_arg;
   
@@ -2792,23 +2784,24 @@ fail:
 }
 
 
-static int _wrap_Ai_queryPlayer(lua_State* L) {
+static int _wrap_Ai_getPlayerGender(lua_State* L) {
   int SWIG_arg = 0;
   Ai *arg1 = (Ai *) 0 ;
   QString *arg2 = 0 ;
   QString temp2 ;
+  QString result;
   
-  SWIG_check_num_args("Ai::queryPlayer",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::queryPlayer",1,"Ai *");
-  if(!lua_isstring(L,2)) SWIG_fail_arg("Ai::queryPlayer",2,"QString const &");
+  SWIG_check_num_args("Ai::getPlayerGender",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::getPlayerGender",1,"Ai *");
+  if(!lua_isstring(L,2)) SWIG_fail_arg("Ai::getPlayerGender",2,"QString const &");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
-    SWIG_fail_ptr("Ai_queryPlayer",1,SWIGTYPE_p_Ai);
+    SWIG_fail_ptr("Ai_getPlayerGender",1,SWIGTYPE_p_Ai);
   }
   
   temp2 = QString::fromUtf8(lua_tostring(L, 2)); arg2 = &temp2; 
-  (arg1)->queryPlayer((QString const &)*arg2);
-  
+  result = (arg1)->getPlayerGender((QString const &)*arg2);
+  lua_pushstring(L, (&result)->toUtf8().constData()); SWIG_arg++;
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -3083,130 +3076,6 @@ fail:
 }
 
 
-static int _wrap_Ai_setNameCombo(lua_State* L) {
-  int SWIG_arg = 0;
-  Ai *arg1 = (Ai *) 0 ;
-  QString *arg2 = 0 ;
-  QString temp2 ;
-  bool result;
-  
-  SWIG_check_num_args("Ai::setNameCombo",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::setNameCombo",1,"Ai *");
-  if(!lua_isstring(L,2)) SWIG_fail_arg("Ai::setNameCombo",2,"QString const &");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
-    SWIG_fail_ptr("Ai_setNameCombo",1,SWIGTYPE_p_Ai);
-  }
-  
-  temp2 = QString::fromUtf8(lua_tostring(L, 2)); arg2 = &temp2; 
-  result = (bool)(arg1)->setNameCombo((QString const &)*arg2);
-  lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_Ai_setText(lua_State* L) {
-  int SWIG_arg = 0;
-  Ai *arg1 = (Ai *) 0 ;
-  QString *arg2 = 0 ;
-  QString temp2 ;
-  
-  SWIG_check_num_args("Ai::setText",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::setText",1,"Ai *");
-  if(!lua_isstring(L,2)) SWIG_fail_arg("Ai::setText",2,"QString const &");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
-    SWIG_fail_ptr("Ai_setText",1,SWIGTYPE_p_Ai);
-  }
-  
-  temp2 = QString::fromUtf8(lua_tostring(L, 2)); arg2 = &temp2; 
-  (arg1)->setText((QString const &)*arg2);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_Ai_sendPress(lua_State* L) {
-  int SWIG_arg = 0;
-  Ai *arg1 = (Ai *) 0 ;
-  
-  SWIG_check_num_args("Ai::sendPress",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::sendPress",1,"Ai *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
-    SWIG_fail_ptr("Ai_sendPress",1,SWIGTYPE_p_Ai);
-  }
-  
-  (arg1)->sendPress();
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_Ai_sendRelease(lua_State* L) {
-  int SWIG_arg = 0;
-  Ai *arg1 = (Ai *) 0 ;
-  
-  SWIG_check_num_args("Ai::sendRelease",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::sendRelease",1,"Ai *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
-    SWIG_fail_ptr("Ai_sendRelease",1,SWIGTYPE_p_Ai);
-  }
-  
-  (arg1)->sendRelease();
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_Ai_sendClick(lua_State* L) {
-  int SWIG_arg = 0;
-  Ai *arg1 = (Ai *) 0 ;
-  
-  SWIG_check_num_args("Ai::sendClick",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::sendClick",1,"Ai *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
-    SWIG_fail_ptr("Ai_sendClick",1,SWIGTYPE_p_Ai);
-  }
-  
-  (arg1)->sendClick();
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_Ai_getFirstChar(lua_State* L) {
   int SWIG_arg = 0;
   Ai *arg1 = (Ai *) 0 ;
@@ -3280,53 +3149,6 @@ static int _wrap_Ai_debugOutput(lua_State* L) {
   temp2 = QString::fromUtf8(lua_tostring(L, 2)); arg2 = &temp2; 
   (arg1)->debugOutput((QString const &)*arg2);
   
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_Ai_prepareExit(lua_State* L) {
-  int SWIG_arg = 0;
-  Ai *arg1 = (Ai *) 0 ;
-  
-  SWIG_check_num_args("Ai::prepareExit",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::prepareExit",1,"Ai *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
-    SWIG_fail_ptr("Ai_prepareExit",1,SWIGTYPE_p_Ai);
-  }
-  
-  (arg1)->prepareExit();
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_Ai_firstUnreadMessageFrom(lua_State* L) {
-  int SWIG_arg = 0;
-  Ai *arg1 = (Ai *) 0 ;
-  QString result;
-  
-  SWIG_check_num_args("Ai::firstUnreadMessageFrom",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::firstUnreadMessageFrom",1,"Ai *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
-    SWIG_fail_ptr("Ai_firstUnreadMessageFrom",1,SWIGTYPE_p_Ai);
-  }
-  
-  result = (arg1)->firstUnreadMessageFrom();
-  lua_pushstring(L, (&result)->toUtf8().constData()); SWIG_arg++;
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -3452,6 +3274,129 @@ fail:
 }
 
 
+static int _wrap_Ai_setNameCombo(lua_State* L) {
+  int SWIG_arg = 0;
+  Ai *arg1 = (Ai *) 0 ;
+  QString *arg2 = 0 ;
+  QString temp2 ;
+  
+  SWIG_check_num_args("Ai::setNameCombo",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::setNameCombo",1,"Ai *");
+  if(!lua_isstring(L,2)) SWIG_fail_arg("Ai::setNameCombo",2,"QString const &");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
+    SWIG_fail_ptr("Ai_setNameCombo",1,SWIGTYPE_p_Ai);
+  }
+  
+  temp2 = QString::fromUtf8(lua_tostring(L, 2)); arg2 = &temp2; 
+  (arg1)->setNameCombo((QString const &)*arg2);
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_Ai_setText(lua_State* L) {
+  int SWIG_arg = 0;
+  Ai *arg1 = (Ai *) 0 ;
+  QString *arg2 = 0 ;
+  QString temp2 ;
+  
+  SWIG_check_num_args("Ai::setText",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::setText",1,"Ai *");
+  if(!lua_isstring(L,2)) SWIG_fail_arg("Ai::setText",2,"QString const &");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
+    SWIG_fail_ptr("Ai_setText",1,SWIGTYPE_p_Ai);
+  }
+  
+  temp2 = QString::fromUtf8(lua_tostring(L, 2)); arg2 = &temp2; 
+  (arg1)->setText((QString const &)*arg2);
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_Ai_sendPress(lua_State* L) {
+  int SWIG_arg = 0;
+  Ai *arg1 = (Ai *) 0 ;
+  
+  SWIG_check_num_args("Ai::sendPress",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::sendPress",1,"Ai *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
+    SWIG_fail_ptr("Ai_sendPress",1,SWIGTYPE_p_Ai);
+  }
+  
+  (arg1)->sendPress();
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_Ai_sendRelease(lua_State* L) {
+  int SWIG_arg = 0;
+  Ai *arg1 = (Ai *) 0 ;
+  
+  SWIG_check_num_args("Ai::sendRelease",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::sendRelease",1,"Ai *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
+    SWIG_fail_ptr("Ai_sendRelease",1,SWIGTYPE_p_Ai);
+  }
+  
+  (arg1)->sendRelease();
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_Ai_sendClick(lua_State* L) {
+  int SWIG_arg = 0;
+  Ai *arg1 = (Ai *) 0 ;
+  
+  SWIG_check_num_args("Ai::sendClick",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::sendClick",1,"Ai *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
+    SWIG_fail_ptr("Ai_sendClick",1,SWIGTYPE_p_Ai);
+  }
+  
+  (arg1)->sendClick();
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static void swig_delete_Ai(void *obj) {
 Ai *arg1 = (Ai *) obj;
 delete arg1;
@@ -3470,23 +3415,21 @@ static swig_lua_attribute swig_Ai_attributes[] = {
 static swig_lua_method swig_Ai_methods[]= {
     { "name", _wrap_Ai_name},
     { "gender", _wrap_Ai_gender},
-    { "queryPlayer", _wrap_Ai_queryPlayer},
+    { "getPlayerGender", _wrap_Ai_getPlayerGender},
     { "queryTl", _wrap_Ai_queryTl},
     { "addTimer", _wrap_Ai_addTimer},
     { "killTimer", _wrap_Ai_killTimer},
+    { "getFirstChar", _wrap_Ai_getFirstChar},
+    { "removeFirstChar", _wrap_Ai_removeFirstChar},
+    { "debugOutput", _wrap_Ai_debugOutput},
+    { "newMessagePlayers", _wrap_Ai_newMessagePlayers},
+    { "onlinePlayers", _wrap_Ai_onlinePlayers},
+    { "getNewestSpokenMessage", _wrap_Ai_getNewestSpokenMessage},
     { "setNameCombo", _wrap_Ai_setNameCombo},
     { "setText", _wrap_Ai_setText},
     { "sendPress", _wrap_Ai_sendPress},
     { "sendRelease", _wrap_Ai_sendRelease},
     { "sendClick", _wrap_Ai_sendClick},
-    { "getFirstChar", _wrap_Ai_getFirstChar},
-    { "removeFirstChar", _wrap_Ai_removeFirstChar},
-    { "debugOutput", _wrap_Ai_debugOutput},
-    { "prepareExit", _wrap_Ai_prepareExit},
-    { "firstUnreadMessageFrom", _wrap_Ai_firstUnreadMessageFrom},
-    { "newMessagePlayers", _wrap_Ai_newMessagePlayers},
-    { "onlinePlayers", _wrap_Ai_onlinePlayers},
-    { "getNewestSpokenMessage", _wrap_Ai_getNewestSpokenMessage},
     {0,0}
 };
 static swig_lua_method swig_Ai_meta[] = {
@@ -3522,13 +3465,6 @@ static swig_lua_attribute swig_SwigModule_attributes[] = {
     {0,0,0}
 };
 static swig_lua_const_info swig_SwigModule_constants[]= {
-    {SWIG_LUA_CONSTTAB_INT("FromRole", FromRole)},
-    {SWIG_LUA_CONSTTAB_INT("FromYouRole", FromYouRole)},
-    {SWIG_LUA_CONSTTAB_INT("ToYouRole", ToYouRole)},
-    {SWIG_LUA_CONSTTAB_INT("GroupSentRole", GroupSentRole)},
-    {SWIG_LUA_CONSTTAB_INT("TimeRole", TimeRole)},
-    {SWIG_LUA_CONSTTAB_INT("ContentRole", ContentRole)},
-    {SWIG_LUA_CONSTTAB_INT("HasUnreadMessageRole", HasUnreadMessageRole)},
     {0,0,0,0,0,0}
 };
 static swig_lua_method swig_SwigModule_methods[]= {
@@ -3557,22 +3493,18 @@ static swig_lua_namespace swig_SwigModule = {
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
 static swig_type_info _swigt__p_Ai = {"_p_Ai", "Ai *", 0, 0, (void*)&_wrap_class_Ai, 0};
-static swig_type_info _swigt__p_Client = {"_p_Client", "Client *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Dialog = {"_p_Dialog", "Dialog *", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
   &_swigt__p_Ai,
-  &_swigt__p_Client,
   &_swigt__p_Dialog,
 };
 
 static swig_cast_info _swigc__p_Ai[] = {  {&_swigt__p_Ai, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_Client[] = {  {&_swigt__p_Client, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Dialog[] = {  {&_swigt__p_Dialog, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_Ai,
-  _swigc__p_Client,
   _swigc__p_Dialog,
 };
 

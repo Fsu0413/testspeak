@@ -12,6 +12,7 @@ class QListWidgetItem;
 class QLineEdit;
 class QPushButton;
 class Client;
+class QThread;
 
 struct SpeakDetail
 {
@@ -39,7 +40,8 @@ enum PlayerRole
 {
     PlayerRole__QtUserRole = Qt::UserRole,
 
-    HasUnreadMessageRole
+    HasUnreadMessageRole,
+    GenderRole,
 };
 
 class Dialog : public QWidget
@@ -56,11 +58,12 @@ public:
     QPushButton *sendbtn;
 
     Client *client;
+    QThread *aiThread;
 
     QMap<QString, QList<SpeakDetail> *> speakMap;
 
 public slots:
-    void addPlayer(QString name);
+    void addPlayer(QString name, QString gender);
     void removePlayer(QString name);
     void playerDetail(QJsonObject ob);
     void playerSpoken(QString from, QString to, QString content, bool fromYou, bool toYou, bool groupsent, quint32 time);
@@ -68,6 +71,17 @@ public slots:
     void send();
 
     void userNameChanged(QListWidgetItem *current, QListWidgetItem *previous);
+
+    // queued connection
+    void setNameCombo(const QString &name);
+    void setText(const QString &text);
+    void sendPress();
+    void sendRelease();
+    void sendClick();
+
+    // blocking queued connection
+    void refreshPlayerList();
+    void refreshMessageList();
 
     // QWidget interface
 protected:

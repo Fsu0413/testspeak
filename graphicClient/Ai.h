@@ -11,24 +11,27 @@
 class QTimer;
 class QNetworkAccessManager;
 class Client;
+class QMutex;
 
 extern "C" {
 typedef struct lua_State lua_State;
 }
+
+extern QVariantMap AiData;
+extern QMutex AiDataMutex;
 
 class Ai : public QObject
 {
     Q_OBJECT
 
 public:
-    Ai(Client *client, Dialog *parent);
+    Ai(Dialog *dialog);
     ~Ai();
 
 private:
     void pcall(int argnum);
 
     Dialog *dialog;
-    Client *client;
 
     QMap<int, QTimer *> timers;
 
@@ -41,31 +44,34 @@ public:
     // funcs which should be called by lua
     QString name();
     QString gender();
-    void queryPlayer(const QString &name);
+    QString getPlayerGender(const QString &name);
     void queryTl(const QString &id, const QString &content, const QString &key = QString(), const QString &aiComment = QString());
     void addTimer(int timerId, int timeOut);
     void killTimer(int timerId);
-    bool setNameCombo(const QString &name);
-    void setText(const QString &text);
-    void sendPress();
-    void sendRelease();
-    void sendClick();
     QString getFirstChar(const QString &c);
     QString removeFirstChar(const QString &c);
     void debugOutput(const QString &c);
-    void prepareExit();
-    QString firstUnreadMessageFrom();
     QStringList newMessagePlayers();
     QStringList onlinePlayers();
     SpeakDetail getNewestSpokenMessage();
 
 public slots:
-    void addPlayer(QString name);
-    void removePlayer(QString name);
-    void playerDetail(QJsonObject ob);
-    void playerSpoken(QString from, QString to, QString content, bool fromYou, bool toYou, bool groupsent, quint32 time);
     void receive();
     void timeout();
+
+    void start();
+
+signals:
+    // queued connection
+    void setNameCombo(const QString &name);
+    void setText(const QString &text);
+    void sendPress();
+    void sendRelease();
+    void sendClick();
+
+    // blocking queued connection
+    void refreshPlayerList();
+    void refreshMessageList();
 };
 
 #endif

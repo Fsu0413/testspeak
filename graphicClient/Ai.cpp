@@ -11,10 +11,12 @@
 #include <QLineEdit>
 #include <QListWidget>
 #include <QMap>
+#include <QMutex>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QPushButton>
+#include <QThread>
 #include <QTimer>
 #include <QUrl>
 
@@ -29,36 +31,12 @@ const QString packagePathStr = "package.path = package.path .. \";%1/ai/lib/?.lu
 
 void setMe(lua_State *l, Ai *ai);
 
-Ai::Ai(Client *client, Dialog *parent)
-    : QObject(parent)
-    , dialog(parent)
-    , client(client)
+QVariantMap AiData;
+QMutex AiDataMutex;
+
+Ai::Ai(Dialog *dialog)
+    : dialog(dialog)
 {
-    nam1 = new QNetworkAccessManager(this);
-
-    connect(client, &Client::addPlayer, this, &Ai::addPlayer);
-    connect(client, &Client::removePlayer, this, &Ai::removePlayer);
-    connect(client, &Client::playerDetail, this, &Ai::playerDetail);
-    connect(client, &Client::playerSpoken, this, &Ai::playerSpoken);
-
-    l = luaL_newstate();
-    luaL_openlibs(l);
-
-    QString packagePathStrFormatted = packagePathStr.arg(QDir::currentPath());
-    luaL_dostring(l, packagePathStrFormatted.toUtf8().constData());
-
-    luaopen_Ai(l);
-    setMe(l, this);
-
-    QTimer::singleShot(1, [this]() -> void {
-        if (currentTlset.contains("aiFile")) {
-            if (luaL_dofile(l, currentTlset.value("aiFile").toString().toLocal8Bit().constData()) != LUA_OK) {
-                QString err = QString::fromUtf8(lua_tostring(l, -1));
-                qDebug() << err;
-                lua_pop(l, 1);
-            }
-        }
-    });
 }
 
 Ai::~Ai()
@@ -85,9 +63,15 @@ QString Ai::gender()
     return currentTlset["gender"].toString();
 }
 
-void Ai::queryPlayer(const QString &name)
+QString Ai::getPlayerGender(const QString &name)
 {
-    client->queryPlayerDetail(name);
+    emit refreshPlayerList();
+
+    QMutexLocker locker(&AiDataMutex);
+    (void)locker;
+
+    QVariantMap playerDetail = AiData.value("players").toMap().value(name).toMap();
+    return playerDetail.value("gender").toString();
 }
 
 void Ai::queryTl(const QString &id, const QString &content, const QString &_key, const QString &aiComment)
@@ -137,46 +121,6 @@ void Ai::killTimer(int timerId)
     }
 }
 
-bool Ai::setNameCombo(const QString &name)
-{
-    dialog->userNames->setFocus();
-    auto items = dialog->userNames->findItems(name, Qt::MatchExactly);
-    foreach (QListWidgetItem *item, items) {
-        if (item->text() == name) {
-            dialog->userNames->setCurrentItem(item);
-            return true;
-        }
-    }
-
-    return false;
-}
-
-void Ai::setText(const QString &text)
-{
-    dialog->edit->setFocus();
-    dialog->edit->deselect();
-    dialog->edit->setText(text);
-    dialog->edit->setCursorPosition(text.length());
-}
-
-void Ai::sendPress()
-{
-    dialog->sendbtn->setFocus();
-    dialog->sendbtn->setDown(true);
-}
-
-void Ai::sendRelease()
-{
-    dialog->sendbtn->setFocus();
-    dialog->sendbtn->setDown(false);
-}
-
-void Ai::sendClick()
-{
-    dialog->sendbtn->setDown(false);
-    dialog->sendbtn->click();
-}
-
 QString Ai::getFirstChar(const QString &c)
 {
     return c.left(1);
@@ -192,33 +136,17 @@ void Ai::debugOutput(const QString &c)
     qDebug() << c;
 }
 
-void Ai::prepareExit()
-{
-    qApp->exit();
-}
-
-QString Ai::firstUnreadMessageFrom()
-{
-    for (int i = 0; i < dialog->userNames->count(); ++i) {
-        auto item = dialog->userNames->item(i);
-        if (item != nullptr) {
-            if (item->data(HasUnreadMessageRole).toBool())
-                return item->text();
-        }
-    }
-
-    return QString();
-}
-
 QStringList Ai::newMessagePlayers()
 {
+    emit refreshPlayerList();
+
     QStringList r;
-    for (int i = 0; i < dialog->userNames->count(); ++i) {
-        auto item = dialog->userNames->item(i);
-        if (item != nullptr) {
-            if (item->data(HasUnreadMessageRole).toBool())
-                r.append(item->text());
-        }
+    QVariantMap playerDetail = AiData.value("players").toMap();
+
+    foreach (const QVariant &detailVariant, playerDetail) {
+        QVariantMap detail = detailVariant.toMap();
+        if (detail["hasUnreadMessage"].toBool())
+            r.append(detail["name"].toString());
     }
 
     return r;
@@ -226,16 +154,12 @@ QStringList Ai::newMessagePlayers()
 
 QStringList Ai::onlinePlayers()
 {
-    QStringList r;
-    for (int i = 0; i < dialog->userNames->count(); ++i) {
-        auto item = dialog->userNames->item(i);
-        if (item != nullptr) {
-            // if (item->text() != "all")
-            r.append(item->text());
-        }
-    }
+    emit refreshPlayerList();
 
-    return r;
+    QMutexLocker locker(&AiDataMutex);
+    (void)locker;
+
+    return AiData.value("players").toMap().keys();
 }
 
 SpeakDetail Ai::getNewestSpokenMessage()
@@ -246,59 +170,24 @@ SpeakDetail Ai::getNewestSpokenMessage()
     detail.groupSent = false;
     detail.time = 0;
 
-    if (dialog->listWidget->count() == 0)
+    emit refreshMessageList();
+
+    QMutexLocker locker(&AiDataMutex);
+    (void)locker;
+
+    QVariantMap message = AiData["message"].toMap();
+
+    if (message.isEmpty())
         return detail;
 
-    auto item = dialog->listWidget->item(dialog->listWidget->count() - 1);
-    if (item == nullptr)
-        return detail;
-
-    detail.from = item->data(FromRole).toString();
-    detail.fromYou = item->data(FromYouRole).toBool();
-    detail.toYou = item->data(ToYouRole).toBool();
-    detail.groupSent = item->data(GroupSentRole).toBool();
-    detail.time = item->data(TimeRole).toULongLong();
-    detail.content = item->data(ContentRole).toString();
+    detail.from = message["from"].toString();
+    detail.fromYou = message["fromYou"].toBool();
+    detail.toYou = message["toYou"].toBool();
+    detail.groupSent = message["groupSent"].toBool();
+    detail.time = message["time"].toULongLong();
+    detail.content = message["content"].toString();
 
     return detail;
-}
-
-void Ai::addPlayer(QString name)
-{
-    lua_getglobal(l, "addPlayer");
-    lua_pushstring(l, name.toUtf8().constData());
-    pcall(1);
-}
-
-void Ai::removePlayer(QString name)
-{
-    lua_getglobal(l, "removePlayer");
-    lua_pushstring(l, name.toUtf8().constData());
-    pcall(1);
-}
-
-void Ai::playerDetail(QJsonObject ob)
-{
-    QString obName = ob.value("userName").toString();
-    QString obGender = ob.value("gender").toString();
-
-    lua_getglobal(l, "playerDetail");
-    lua_pushstring(l, obName.toUtf8().constData());
-    lua_pushstring(l, obGender.toUtf8().constData());
-    pcall(2);
-}
-
-void Ai::playerSpoken(QString from, QString to, QString content, bool fromYou, bool toYou, bool groupsent, quint32 time)
-{
-    lua_getglobal(l, "playerSpoken");
-    lua_pushstring(l, from.toUtf8().constData());
-    lua_pushstring(l, to.toUtf8().constData());
-    lua_pushstring(l, content.toUtf8().constData());
-    lua_pushboolean(l, fromYou);
-    lua_pushboolean(l, toYou);
-    lua_pushboolean(l, groupsent);
-    lua_pushinteger(l, (lua_Integer)time);
-    pcall(7);
 }
 
 void Ai::receive()
@@ -334,5 +223,47 @@ void Ai::timeout()
         lua_getglobal(l, "timeout");
         lua_pushinteger(l, timerId);
         pcall(1);
+    }
+}
+
+void Ai::start()
+{
+    //    // queued connection
+    //    void setNameCombo(const QString &name);
+    //    void setText(const QString &text);
+    //    void sendPress();
+    //    void sendRelease();
+    //    void sendClick();
+
+    //    // blocking queued connection
+    //    void refreshPlayerList();
+    //    void refreshMessageList();
+
+    connect(this, &Ai::setNameCombo, dialog, &Dialog::setNameCombo, Qt::QueuedConnection);
+    connect(this, &Ai::setText, dialog, &Dialog::setText, Qt::QueuedConnection);
+    connect(this, &Ai::sendPress, dialog, &Dialog::sendPress, Qt::QueuedConnection);
+    connect(this, &Ai::sendRelease, dialog, &Dialog::sendRelease, Qt::QueuedConnection);
+    connect(this, &Ai::sendClick, dialog, &Dialog::sendClick, Qt::QueuedConnection);
+
+    //    connect(this, &Ai::refreshPlayerList, dialog, &Dialog::refreshPlayerList, Qt::BlockingQueuedConnection);
+    //    connect(this, &Ai::refreshMessageList, dialog, &Dialog::refreshMessageList, Qt::BlockingQueuedConnection);
+
+    nam1 = new QNetworkAccessManager(this);
+
+    l = luaL_newstate();
+    luaL_openlibs(l);
+
+    QString packagePathStrFormatted = packagePathStr.arg(QDir::currentPath());
+    luaL_dostring(l, packagePathStrFormatted.toUtf8().constData());
+
+    luaopen_Ai(l);
+    setMe(l, this);
+
+    if (currentTlset.contains("aiFile")) {
+        if (luaL_dofile(l, currentTlset.value("aiFile").toString().toLocal8Bit().constData()) != LUA_OK) {
+            QString err = QString::fromUtf8(lua_tostring(l, -1));
+            qDebug() << err;
+            lua_pop(l, 1);
+        }
     }
 }

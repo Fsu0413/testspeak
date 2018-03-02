@@ -103,50 +103,28 @@ SWIG_arg++;
 class Ai
 {
 public:
-    Ai(Client *,Dialog *);
+    Ai(Dialog *);
     ~Ai();
 
     // funcs which should be called by lua
     QString name();
     QString gender();
-    void queryPlayer(const QString &name);
+    QString getPlayerGender(const QString &name);
     void queryTl(const QString &id, const QString &content, const QString &key = QString(), const QString &aiComment = QString());
     void addTimer(int timerId, int timeOut);
     void killTimer(int timerId);
-    bool setNameCombo(const QString &name);
+    QString getFirstChar(const QString &c);
+    QString removeFirstChar(const QString &c);
+    void debugOutput(const QString &c);
+    QStringList newMessagePlayers();
+    QStringList onlinePlayers();
+    SpeakDetail getNewestSpokenMessage();
+
+    void setNameCombo(const QString &name);
     void setText(const QString &text);
     void sendPress();
     void sendRelease();
     void sendClick();
-    QString getFirstChar(const QString &c);
-    QString removeFirstChar(const QString &c);
-    void debugOutput(const QString &c);
-    void prepareExit();
-    QString firstUnreadMessageFrom();
-	QStringList newMessagePlayers();
-    QStringList onlinePlayers();
-    SpeakDetail getNewestSpokenMessage();
-
-};
-
-
-enum SpeakRole
-{
-    // QtUserRole = Qt::UserRole,
-
-    FromRole,
-    FromYouRole,
-    ToYouRole,
-	GroupSentRole,
-    TimeRole,
-    ContentRole,
-};
-
-enum PlayerRole
-{
-    // PlayerRole__QtUserRole = Qt::UserRole,
-
-    HasUnreadMessageRole
 };
 
 %{

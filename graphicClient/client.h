@@ -58,7 +58,7 @@ public slots:
     void sendHeartBeat();
 
 signals:
-    void addPlayer(QString name);
+    void addPlayer(QString name, QString gender);
     void removePlayer(QString name);
     void playerDetail(QJsonObject ob);
     void playerSpoken(QString from, QString to, QString content, bool fromYou, bool toYou, bool groupsent, quint32 time);

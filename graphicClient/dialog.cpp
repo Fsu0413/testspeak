@@ -6,6 +6,7 @@
 #include <QCloseEvent>
 #include <QComboBox>
 #include <QDateTime>
+#include <QDebug>
 #include <QFile>
 #include <QFont>
 #include <QFontMetrics>
@@ -17,7 +18,9 @@
 #include <QLineEdit>
 #include <QListWidget>
 #include <QMap>
+#include <QMutex>
 #include <QPushButton>
+#include <QThread>
 #include <QVBoxLayout>
 
 QVariantMap config;
@@ -123,17 +126,29 @@ Dialog::Dialog(QWidget *parent)
     connect(client, &Client::playerDetail, this, &Dialog::playerDetail);
     connect(client, &Client::playerSpoken, this, &Dialog::playerSpoken);
 
-    new Ai(client, this);
+    Ai *ai = new Ai(this);
+    aiThread = new QThread(this);
+    ai->moveToThread(aiThread);
+    connect(aiThread, &QThread::finished, ai, &Ai::deleteLater);
+    connect(aiThread, &QThread::started, ai, &Ai::start);
+    aiThread->start();
 }
 
 Dialog::~Dialog()
 {
+    while (!aiThread->isFinished()) {
+        qDebug() << "wait";
+        aiThread->wait(1000);
+    }
+
     qDeleteAll(speakMap);
 }
 
-void Dialog::addPlayer(QString name)
+void Dialog::addPlayer(QString name, QString gender)
 {
-    userNames->addItem(name);
+    QListWidgetItem *item = new QListWidgetItem(name);
+    item->setData(GenderRole, gender);
+    userNames->addItem(item);
 }
 
 void Dialog::removePlayer(QString name)
@@ -141,6 +156,9 @@ void Dialog::removePlayer(QString name)
     for (int i = 0; i < userNames->count(); ++i) {
         QListWidgetItem *item = userNames->item(i);
         if (item != nullptr && item->text() == name) {
+            if (item->isSelected())
+                userNames->setCurrentRow(-1);
+
             delete userNames->takeItem(i);
             i = -1;
         }
@@ -197,8 +215,10 @@ void Dialog::send()
     if (!edit->text().isEmpty()) {
         QString to = "all";
         QListWidgetItem *item = userNames->currentItem();
-        if (item != nullptr)
-            to = userNames->currentItem()->text();
+        if (item == nullptr)
+            return;
+
+        to = userNames->currentItem()->text();
 
         if (to == "all")
             to.clear();
@@ -210,9 +230,87 @@ void Dialog::send()
 
 void Dialog::userNameChanged(QListWidgetItem *current, QListWidgetItem *)
 {
-    current->setBackgroundColor(qRgb(255, 255, 255));
-    current->setData(HasUnreadMessageRole, false);
+    if (current != nullptr) {
+        current->setBackgroundColor(qRgb(255, 255, 255));
+        current->setData(HasUnreadMessageRole, false);
+    }
     updateList();
+}
+
+void Dialog::setNameCombo(const QString &name)
+{
+    userNames->setFocus();
+    auto items = userNames->findItems(name, Qt::MatchExactly);
+    foreach (QListWidgetItem *item, items) {
+        if (item->text() == name)
+            userNames->setCurrentItem(item);
+    }
+}
+
+void Dialog::setText(const QString &text)
+{
+    edit->setFocus();
+    edit->deselect();
+    edit->setText(text);
+    edit->setCursorPosition(text.length());
+}
+
+void Dialog::sendPress()
+{
+    sendbtn->setFocus();
+    sendbtn->setDown(true);
+}
+
+void Dialog::sendRelease()
+{
+    sendbtn->setFocus();
+    sendbtn->setDown(false);
+}
+
+void Dialog::sendClick()
+{
+    sendbtn->setDown(false);
+    sendbtn->click();
+}
+
+void Dialog::refreshPlayerList()
+{
+    QVariantMap playerList;
+    for (int i = 0; i < userNames->count(); ++i) {
+        QListWidgetItem *item = userNames->item(i);
+        if (item != nullptr) {
+            QVariantMap playerData;
+            playerData["name"] = item->text();
+            if (item->text() != "all")
+                playerData["gender"] = item->data(GenderRole).toString();
+            playerData["hasUnreadMessage"] = item->data(HasUnreadMessageRole).toBool();
+            playerList[item->text()] = playerData;
+        }
+    }
+
+    QMutexLocker locker(&AiDataMutex);
+    (void)locker;
+    AiData["players"] = playerList;
+}
+
+void Dialog::refreshMessageList()
+{
+    QVariantMap message;
+    if (listWidget->count() > 0) {
+        auto item = listWidget->item(listWidget->count() - 1);
+        if (item != nullptr) {
+            message["from"] = item->data(FromRole).toString();
+            message["fromYou"] = item->data(FromYouRole).toBool();
+            message["toYou"] = item->data(ToYouRole).toBool();
+            message["groupSent"] = item->data(GroupSentRole).toBool();
+            message["time"] = item->data(TimeRole).toULongLong();
+            message["content"] = item->data(ContentRole).toString();
+        }
+    }
+
+    QMutexLocker locker(&AiDataMutex);
+    (void)locker;
+    AiData["message"] = message;
 }
 
 void Dialog::closeEvent(QCloseEvent *event)
@@ -220,11 +318,16 @@ void Dialog::closeEvent(QCloseEvent *event)
     if (client != nullptr)
         client->disconnectFromHost();
 
+    if (aiThread->isRunning())
+        aiThread->quit();
+
     QWidget::closeEvent(event);
 }
 
 void Dialog::updateList()
 {
+    listWidget->clear();
+
     QString name;
     auto item = userNames->currentItem();
     if (item != nullptr)
@@ -233,7 +336,6 @@ void Dialog::updateList()
     if (name.isEmpty())
         return;
 
-    listWidget->clear();
     if (!speakMap.contains(name))
         return;
 

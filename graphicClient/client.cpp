@@ -58,7 +58,7 @@ void Client::notifiedHeartBeat(const QJsonObject &contents)
 
 void Client::notifiedSignedIn(const QJsonObject &contents)
 {
-    emit addPlayer(contents.value("userName").toString());
+    emit addPlayer(contents.value("userName").toString(), contents.value("gender").toString());
 }
 
 void Client::notifiedSignedOut(const QJsonObject &contents)
@@ -68,13 +68,14 @@ void Client::notifiedSignedOut(const QJsonObject &contents)
 
 void Client::notifiedQueryResult(const QJsonObject &contents)
 {
-    if (contents.contains("res")) {
-        QJsonArray arr = contents.value("res").toArray();
-        QVariantList list = arr.toVariantList();
-        foreach (const QVariant &var, list) {
-            QString str = var.toString();
-            if (str != selfName)
-                emit addPlayer(str);
+    if (contents.contains("resv2")) {
+        //QJsonArray arr = contents.value("res").toArray();
+        QJsonObject ob = contents.value("resv2").toObject();
+        foreach (const QString &str, ob.keys()) {
+            if (str != selfName) {
+                QString gender = ob.value(str).toObject().value("gender").toString();
+                emit addPlayer(str, gender);
+            }
         }
     } else {
         emit playerDetail(contents);

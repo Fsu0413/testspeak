@@ -216,6 +216,7 @@ analyzeContent = function(from)
 	end
 	me:debugOutput("data.queryTl" .. from .. data.recvList[from][#(data.recvList[from])])
 	me:queryTl(from, data.recvList[from][#(data.recvList[from])])
+	return true
 end
 
 talk = function(from, content)
@@ -256,11 +257,11 @@ end
 		if not judgeIgnore() then
 			data.currentViewing.cancel = true
 		else
-			analyzeContent(from)
+			return analyzeContent(from)
 		end
 	else
 		if judgeIgnore() then
-			analyzeContent(from)
+			return analyzeContent(from)
 		end
 	end
 end
@@ -303,8 +304,8 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtim
 			["time"] = sendtime,
 			["content"] = content
 		}
-		talk(from, content)
-		return from
+		local r = talk(from, content)
+		return from, r
 	end
 
 	if groupsent then
@@ -330,13 +331,13 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtim
 	end
 end
 	if (data.sendingStep == 102) and ((data.currentViewing.name == detail.from) or (data.currentViewing.name == "all")) and (not data.currentViewing.cancel) then
-		local willSpeak = playerSpoken1(detail.from, detail.content, detail.fromYou, detail.toYou, detail.groupSent, detail.time)
+		local willSpeak, async = playerSpoken1(detail.from, detail.content, detail.fromYou, detail.toYou, detail.groupSent, detail.time)
 		if not willSpeak then
 			if not data.currentViewing.content then
 				data.currentViewing.cancel = true
 			end
 		else
-			if data.currentViewing.content then
+			if data.currentViewing.content and async then
 				data.currentViewing.content = nil
 			end
 			if willSpeak ~= data.currentViewing.name then
