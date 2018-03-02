@@ -91,10 +91,14 @@ public:
         if (!content.contains("userName")) {
             qDebug() << socket->peerAddress().toString() << "," << socket->peerPort() << "is querying all";
             QJsonArray arr;
-            foreach (const QString &name, nameSocketMap.keys())
-                arr.append(name);
-
+            QJsonObject ob;
+            foreach (const QJsonObject &tl, socketTlMap) {
+                arr.append(tl.value("userName"));
+                ob[tl.value("userName").toString()] = tl;
+            }
             ret[QStringLiteral("res")] = arr;
+            ret[QStringLiteral("resv2")] = ob;
+
         } else {
             QString name = content.value("userName").toString();
             qDebug() << socket->peerAddress().toString() << "," << socket->peerPort() << "is querying" << name;
