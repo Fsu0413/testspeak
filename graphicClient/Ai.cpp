@@ -245,8 +245,8 @@ void Ai::start()
     connect(this, &Ai::sendRelease, dialog, &Dialog::sendRelease, Qt::QueuedConnection);
     connect(this, &Ai::sendClick, dialog, &Dialog::sendClick, Qt::QueuedConnection);
 
-    //    connect(this, &Ai::refreshPlayerList, dialog, &Dialog::refreshPlayerList, Qt::BlockingQueuedConnection);
-    //    connect(this, &Ai::refreshMessageList, dialog, &Dialog::refreshMessageList, Qt::BlockingQueuedConnection);
+    connect(this, &Ai::refreshPlayerList, dialog, &Dialog::refreshPlayerList, Qt::BlockingQueuedConnection);
+    connect(this, &Ai::refreshMessageList, dialog, &Dialog::refreshMessageList, Qt::BlockingQueuedConnection);
 
     nam1 = new QNetworkAccessManager(this);
 
