@@ -318,8 +318,11 @@ void Dialog::closeEvent(QCloseEvent *event)
     if (client != nullptr)
         client->disconnectFromHost();
 
-    if (aiThread->isRunning())
+    if (aiThread->isRunning()) {
         aiThread->quit();
+        while (!aiThread->isFinished())
+            qApp->processEvents();
+    }
 
     QWidget::closeEvent(event);
 }
