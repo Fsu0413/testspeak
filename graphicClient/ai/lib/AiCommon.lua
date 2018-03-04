@@ -14,7 +14,7 @@ local data = {
 
 local consts = {
 	["GetNewestInfoTimerId"] = 1,
-	["GetNewestInfoTimeout"] = 1,
+	["GetNewestInfoTimeout"] = 100,
 }
 
 local callAddPlayer = function(name)
@@ -56,7 +56,7 @@ local messageEqual = function(toJudge)
 	if data.newestMessage.groupSent ~= toJudge.groupSent then return false end
 	if data.newestMessage.time ~= toJudge.time then return false end
 	if data.newestMessage.content ~= toJudge.content then return false end
-	
+
 	return true
 end
 
@@ -71,13 +71,13 @@ local getNewestInfo = function()
 					break
 				end
 			end
-			
+
 			if not contains then
 				callAddPlayer(x)
 			end
 		end
 	end
-	
+
 	for _, y in ipairs(data.onlinePlayers) do
 		if y ~= "all" then
 			local contains = false
@@ -87,15 +87,15 @@ local getNewestInfo = function()
 					break
 				end
 			end
-			
+
 			if not contains then
 				callRemovePlayer(y)
 			end
 		end
 	end
-	
+
 	data.onlinePlayers = onlinePlayers
-	
+
 	local newMessagePlayers = me:newMessagePlayers()
 	for _, x in ipairs(newMessagePlayers) do
 		local contains = false
@@ -105,21 +105,21 @@ local getNewestInfo = function()
 				break
 			end
 		end
-		
+
 		if not contains then
 			callMessageReceived(x)
 		end
 	end
-	
+
 	data.newMessagePlayers = newMessagePlayers
-	
+
 	local newestSpokenMesage = me:getNewestSpokenMessage()
 	if not messageEqual(newestSpokenMesage) then
 		if newestSpokenMesage.content ~= "" then
 			callMessageDetail(newestSpokenMesage)
 		end
 	end
-	
+
 	data.newestMessage = newestSpokenMesage
 end
 
@@ -131,24 +131,6 @@ AiCommon.timeout = function(timerId)
 	end
 end
 
-
-addPlayer = function()
-
-end
-
-removePlayer = function()
-
-end
-
-playerDetail = function()
-
-end
-
-playerSpoken = function()
-
-end
-
 me:addTimer(consts.GetNewestInfoTimerId, consts.GetNewestInfoTimeout)
-
 
 return AiCommon

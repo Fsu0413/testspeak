@@ -59,16 +59,16 @@ base = {
 	},
 	["callme"] = {
 		"叫我吗？",
-		"你在找我么",
-		"需不需要我给你排忧解难？",
+		"您在找我么",
+		"需不需要我给您排忧解难？",
 	},
 	["greetfemale"] = {
-		"我是__AIREPLACE__，看你有点无聊，我来陪你好了",
+		"我是__AIREPLACE__，看您有点无聊，我来陪您好了",
 		"这么无聊，怕不是有什么心事？",
 	},
 	["greetmale"] = {
 		"俺是__AIREPLACE__，想俺了么？",
-		"看你这么无聊，是不是想俺想到流鼻血。"
+		"看您这么无聊，是不是想俺想到流鼻血。"
 	},
 	["parrotdup"] = {
 		"你叫什么来着？",
@@ -86,7 +86,7 @@ generateRandom = function(rand)
 end
 
 sendingstep = function()
-	local timer = 1
+	local timer = 100
 
 	if data.sendingStep == 0 then
 		if #data.toview ~= 0 then
@@ -150,6 +150,15 @@ sendingstep = function()
 		me:setNameCombo(data.currentViewing.name)
 		timer = consts.sendDelay
 	elseif data.sendingStep == 102 then
+		if not data.currentViewing.time then
+			data.currentViewing.time = os.time()
+		else
+			local passedTime = os.difftime(os.time(), data.currentViewing.time)
+			if passedTime >= 30 then
+				data.currentViewing.cancel = true
+			end
+		end
+
 		if data.currentViewing.cancel then
 			data.currentViewing = {}
 			data.sendingStep = 0
@@ -163,9 +172,7 @@ sendingstep = function()
 		end
 	end
 
-	if timer ~= 1 then
-		timer = generateRandom(timer)
-	end
+	timer = generateRandom(timer)
 
 	me:addTimer(consts.operationTimerId, timer)
 end
@@ -187,7 +194,7 @@ end
 sendTo = function(to, content)
 	if not to then to = "all" end
 	me:debugOutput("sendTo".. to .. content)
-	
+
 	if (data.currentViewing.name == to) and (data.sendingStep == 102) and (not data.currentViewing.cancel) then
 		data.currentViewing.content = content
 	else
@@ -230,7 +237,7 @@ talk = function(from, content)
 	end
 
 	cancelAllPendingSend(from)
-	
+
 	if (data.sendingStep ~= 102) and (data.currentViewing.name == from) then
 		data.currentViewing.cancel = true
 	end

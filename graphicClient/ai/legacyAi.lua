@@ -58,7 +58,7 @@ base = {
 	},
 	["greet"] = {
 		"在吗",
-		"你好，我是__AIREPLACE__",
+		"您好，我是__AIREPLACE__",
 		"hello",
 		"hi"
 	},
@@ -68,7 +68,7 @@ base = {
 		"就这个事，不用重复啦！"
 	},
 	["recvdup"] = {
-		"你是在自言自语吗？",
+		"您是在自言自语吗？",
 		"重要的事情不用说三遍啦。",
 		"复读机，鉴定完毕。"
 	},
@@ -76,7 +76,7 @@ base = {
 		"我现在只对女生感性趣，这段时间不要找我了好么"
 	},
 	["gfemale"] = {
-		"美女请问你可以做我的小哥哥么~"
+		"美女请问您可以做我的小哥哥么~"
 	},
 	["findpersonmale"] = {
 		"有没有人，能陪我尬聊十块钱的",
@@ -112,7 +112,7 @@ generateRandom = function(rand)
 end
 
 sendingstep = function()
-	local timer = 1
+	local timer = 100
 
 	if data.sendingStep == 0 then
 		if #data.toview ~= 0 then
@@ -176,6 +176,15 @@ sendingstep = function()
 		me:setNameCombo(data.currentViewing.name)
 		timer = consts.sendDelay
 	elseif data.sendingStep == 102 then
+		if not data.currentViewing.time then
+			data.currentViewing.time = os.time()
+		else
+			local passedTime = os.difftime(os.time(), data.currentViewing.time)
+			if passedTime >= 30 then
+				data.currentViewing.cancel = true
+			end
+		end
+
 		if data.currentViewing.cancel then
 			data.currentViewing = {}
 			data.sendingStep = 0
@@ -189,9 +198,7 @@ sendingstep = function()
 		end
 	end
 
-	if timer ~= 1 then
-		timer = generateRandom(timer)
-	end
+	timer = generateRandom(timer)
 
 	me:addTimer(consts.operationTimerId, timer)
 end
@@ -213,7 +220,7 @@ end
 sendTo = function(to, content)
 	if not to then to = "all" end
 	me:debugOutput("sendTo".. to .. content)
-	
+
 	if (data.currentViewing.name == to) and (data.sendingStep == 102) and (not data.currentViewing.cancel) then
 		data.currentViewing.content = content
 	else
@@ -264,7 +271,7 @@ talk = function(content)
 	data.timeoutTime = 0
 
 	cancelAllPendingSend(from)
-	
+
 	if (data.sendingStep ~= 102) and (data.currentViewing.name == from) then
 		data.currentViewing.cancel = true
 	end
@@ -292,9 +299,9 @@ AiCommon.Callbacks.removePlayer = function(name)
 		me:killTimer(consts.timeoutTimerId)
 		data.timeoutTime = 0
 	end
-	
+
 	data.recvContent[name] = nil
-	
+
 	if data.currentViewing.name == name then
 		data.currentViewing.cancel = true
 	end
@@ -376,7 +383,7 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtim
 			["time"] = sendtime,
 			["content"] = content
 		}
-	
+
 		if data.speakingTo == "" then
 			local obgender = me:getPlayerGender(from)
 			if (me:gender() ~= obgender) then
