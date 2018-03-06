@@ -296,6 +296,19 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtim
 	me:debugOutput("playerSpoken"..from..content)
 	if fromYou then return end
 
+	local relatedPerson = from
+	if groupSent then
+		relatedPerson = "all"
+	end
+	local recvContent = data.recvContent[relatedPerson]
+	if recvContent and (recvContent.time == sendtime) and (recvContent.content == content) then
+		return
+	end
+	data.recvContent[relatedPerson] = {
+		["time"] = sendtime,
+		["content"] = content
+	}
+
 	for _, i in ipairs(data.outoftimeKnown) do
 		if i == from then
 			return
@@ -303,14 +316,6 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtim
 	end
 
 	if toYou then
-		local recvContent = data.recvContent[from]
-		if recvContent and (recvContent.time == sendtime) and (recvContent.content == content) then
-			return
-		end
-		data.recvContent[from] = {
-			["time"] = sendtime,
-			["content"] = content
-		}
 		local r = talk(from, content)
 		return from, r
 	end

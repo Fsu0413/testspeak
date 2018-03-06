@@ -291,6 +291,19 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtim
 		return
 	end
 
+	local relatedPerson = from
+	if groupSent then
+		relatedPerson = "all"
+	end
+	local recvContent = data.recvContent[relatedPerson]
+	if recvContent and (recvContent.time == sendtime) and (recvContent.content == content) then
+		return
+	end
+	data.recvContent[relatedPerson] = {
+		["time"] = sendtime,
+		["content"] = content
+	}
+
 	for _, i in ipairs(data.outoftimeKnown) do
 		if i == from then
 			return
@@ -298,14 +311,6 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtim
 	end
 
 	if toYou then
-		local recvContent = data.recvContent[from]
-		if recvContent and (recvContent.time == sendtime) and (recvContent.content == content) then
-			return
-		end
-		data.recvContent[from] = {
-			["time"] = sendtime,
-			["content"] = content
-		}
 		local r = talk(from, content)
 		return from, r
 	end
@@ -393,7 +398,7 @@ timeout = function(timerid)
 			data.outoftimeDay = 0
 			data.outoftimeKnown = {}
 			if data.speakingTo ~= "" then
-				for n, _ in ipairs(data.lastSent) do
+				for n, _ in pairs(data.recvList) do
 					if _ then
 						send(n, getStringFromBase("revive"))
 					end
