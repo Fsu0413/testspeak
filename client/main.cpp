@@ -27,8 +27,8 @@ vector<tlData> TLData;
 string talk(string toSend)
 {
     Json::Value v(Json::objectValue);
-    v["key"] = TLData.at(3).key;
-    v["userid"] = TLData.at(3).userId;
+    v["key"] = TLData.at(0).key;
+    v["userid"] = TLData.at(0).userId;
     v["info"] = toSend;
 
     Json::FastWriter writer;
@@ -111,15 +111,11 @@ void randomSleep(const string &str)
 
 extern "C" int main(int argc, char *argv[])
 {
-    TLData.push_back(tlData(string("e05c7e3c40544876896bc1312802a693"), string("test1")));
-    TLData.push_back(tlData(string("c0edfa86336345e4b33e706c704aa946"), string("test2")));
-    TLData.push_back(tlData(string("346af706007f40a29461f2bed2bed1d3"), string("test3")));
-    TLData.push_back(tlData(string("ca3f89d3017a4240833185349f1af003"), string("test4")));
-    TLData.push_back(tlData(string("1607a0d5063943989accb204fdd51f13"), string("test5")));
+    TLData.push_back(tlData(string("095669531b59423db7f615dfa84771f5"), string("v1")));
 
     for (;;) {
         TCPClient *client = new TCPClient;
-        if (client->connect(40000, "192.168.1.72") == 0) {
+        if (client->connect(40000, "192.168.1.70") == 0) {
             for (;;) {
                 ostringstream oss1;
                 char x[2] = {0, 0};
@@ -140,7 +136,7 @@ extern "C" int main(int argc, char *argv[])
                 oss2 << talk(oss1.str()) << endl;
                 string str = oss2.str();
                 cout << "Sending: " << str;
-                randomSleep(str);
+                //randomSleep(str);
                 if (client->send(str) <= 0)
                     break;
             }

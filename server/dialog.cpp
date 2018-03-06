@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <QFile>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
@@ -16,20 +17,7 @@
 #include <QtMath>
 #include <random>
 
-const int thinkdelay = 3000; //1000;
-const int typedelay = 200;
-const int sendDelay = 500;
-
 std::random_device rd;
-
-int generateRandom(int in)
-{
-    int min = in * 0.3;
-    int max = in * 1.5;
-    int diff = max - min;
-
-    return (rd() % diff) + min;
-}
 
 struct tlData
 {
@@ -60,13 +48,9 @@ Dialog::Dialog(QWidget *parent)
     : QWidget(parent)
     , socket(nullptr)
 {
-    TLData << tlData(QStringLiteral("e05c7e3c40544876896bc1312802a693"), QStringLiteral("rp"));
-    TLData << tlData(QStringLiteral("c0edfa86336345e4b33e706c704aa946"), QStringLiteral("cw"));
-    TLData << tlData(QStringLiteral("346af706007f40a29461f2bed2bed1d3"), QStringLiteral("ecy"));
-    TLData << tlData(QStringLiteral("ca3f89d3017a4240833185349f1af003"), QStringLiteral("yx"));
-    TLData << tlData(QStringLiteral("1607a0d5063943989accb204fdd51f13"), QStringLiteral("zr"));
+    TLData << tlData(QStringLiteral("095669531b59423db7f615dfa84771f5"), QStringLiteral("v2"));
 
-    to = 2;
+    to = 0;
 
     nam1 = new QNetworkAccessManager(this);
     //QTimer::singleShot(5000, this, SLOT(send1stPack()));
@@ -104,14 +88,23 @@ void Dialog::sendPack()
 
     QJsonObject ob;
 
-    ob["key"] = QJsonValue(TLData[to].key);
-    ob["userid"] = QJsonValue(TLData[to].userId);
-    ob["info"] = QJsonValue(lastRecv);
+    ob["reqType"] = 0;
+
+    QJsonObject userInfo;
+    userInfo["apiKey"] = QJsonValue(TLData[to].key);
+    userInfo["userId"] = QJsonValue(TLData[to].userId);
+    ob["userInfo"] = userInfo;
+
+    QJsonObject perception;
+    QJsonObject inputText;
+    inputText["text"] = lastRecv;
+    perception["inputText"] = inputText;
+    ob["perception"] = perception;
 
     QJsonDocument doc(ob);
 
-    QNetworkRequest req(QUrl(QStringLiteral("http://www.tuling123.com/openapi/api")));
-    req.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("text/json"));
+    QNetworkRequest req(QUrl(QStringLiteral("http://openapi.tuling123.com/openapi/api/v2")));
+    req.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
 
     QNetworkReply *reply = nam1->post(req, doc.toJson());
     connect(reply, &QNetworkReply::finished, this, &Dialog::receive);
@@ -135,18 +128,10 @@ void Dialog::defeatDup()
 
 void Dialog::startTyping()
 {
-    if (str.isEmpty()) {
-        int del = generateRandom(sendDelay);
-        edit->selectAll();
-        QTimer::singleShot(del, this, SLOT(sendToClient()));
-    } else {
-        int del = 0;
-        if (edit->text().isEmpty())
-            del = generateRandom(thinkdelay);
-        else
-            del = generateRandom(typedelay);
-        QTimer::singleShot(del, this, SLOT(typing()));
-    }
+    if (str.isEmpty())
+        QTimer::singleShot(1, this, SLOT(sendToClient()));
+    else
+        QTimer::singleShot(1, this, SLOT(typing()));
 }
 
 void Dialog::send1stPack()
@@ -193,22 +178,39 @@ void Dialog::receive()
     QJsonDocument doc = QJsonDocument::fromJson(arr);
     if (doc.isObject()) {
         QJsonObject ob = doc.object();
-        if (ob.contains(QStringLiteral("code"))) {
-            QJsonValue value = ob.value(QStringLiteral("code"));
-            int x = value.toInt();
-            switch (x) {
-            case 100000: {
-                str = ob.value("text").toString();
-                str.replace(QRegExp("\\s"), QString());
+        QJsonObject intent = ob["intent"].toObject();
+        int code = intent["code"].toInt();
+        qDebug() << code;
+        if (ob.contains("results")) {
+            QJsonArray results = ob["results"].toArray();
+            foreach (const QJsonValue &_value, results) {
+                QJsonObject result = _value.toObject();
+                qDebug() << result["resultType"].toString() << result["groupType"].toInt();
+                if (result["resultType"].toString() == "text") {
+                    QJsonObject values = result["values"].toObject();
+                    str.append(values["text"].toString());
+                    str.replace(QRegExp("\\s"), QString());
+                }
+            }
+            if (!str.isEmpty())
                 defeatDup();
-                break;
-            }
-            default: {
-                qDebug() << x;
-            }
-            }
         }
     }
+    //        if (ob.contains(QStringLiteral("code"))) {
+    //            QJsonValue value = ob.value(QStringLiteral("code"));
+    //            int x = value.toInt();
+    //            switch (x) {
+    //            case 100000: {
+    //                str = ob.value("text").toString();
+    //                str.replace(QRegExp("\\s"), QString());
+    //                defeatDup();
+    //                break;
+    //            }
+    //            default: {
+    //                qDebug() << x;
+    //            }
+    //            }
+    //        }
 
     edit->clear();
 
