@@ -55,6 +55,9 @@ public:
     QStringList onlinePlayers();
     SpeakDetail getNewestSpokenMessage();
 
+private:
+    void convertJsonValueToLuaValue(const QJsonValue &value);
+
 public slots:
     void receive();
     void timeout();

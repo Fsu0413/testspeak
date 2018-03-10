@@ -5,6 +5,7 @@
 
 #include <QApplication>
 #include <QDir>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
@@ -77,18 +78,26 @@ QString Ai::getPlayerGender(const QString &name)
 void Ai::queryTl(const QString &id, const QString &content, const QString &_key, const QString &aiComment)
 {
     QJsonObject ob;
+    ob["reqType"] = 0;
 
     QString key = _key;
     if (_key.isEmpty())
         key = currentTlset["key"].toString();
 
-    ob["key"] = QJsonValue(key);
-    ob["userid"] = QJsonValue(id);
-    ob["info"] = QJsonValue(content);
+    QJsonObject userInfo;
+    userInfo["apiKey"] = QJsonValue(key);
+    userInfo["userId"] = QJsonValue(id);
+    ob["userInfo"] = userInfo;
+
+    QJsonObject perception;
+    QJsonObject inputText;
+    inputText["text"] = content;
+    perception["inputText"] = inputText;
+    ob["perception"] = perception;
 
     QJsonDocument doc(ob);
 
-    QNetworkRequest req(QUrl(QStringLiteral("http://www.tuling123.com/openapi/api")));
+    QNetworkRequest req(QUrl(QStringLiteral("http://openapi.tuling123.com/openapi/api/v2")));
     req.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
 
     QNetworkReply *reply = nam1->post(req, doc.toJson());
@@ -190,6 +199,56 @@ SpeakDetail Ai::getNewestSpokenMessage()
     return detail;
 }
 
+void Ai::convertJsonValueToLuaValue(const QJsonValue &value)
+{
+    switch (value.type()) {
+    case QJsonValue::Null:
+        break;
+    case QJsonValue::Bool:
+        lua_pushboolean(l, value.toBool());
+        break;
+    case QJsonValue::Double: {
+        double d = value.toDouble();
+        int i = value.toInt();
+        if (qFuzzyCompare(d, (double)i))
+            lua_pushinteger(l, i);
+        else
+            lua_pushnumber(l, d);
+    } break;
+    case QJsonValue::String:
+        lua_pushstring(l, value.toString().toUtf8().constData());
+        break;
+    case QJsonValue::Array: {
+        QJsonArray arr = value.toArray();
+        lua_createtable(l, arr.size(), 0);
+        int i = 0;
+        foreach (const QJsonValue &v, arr) {
+            if (v.isNull())
+                continue;
+            lua_pushinteger(l, ++i);
+            convertJsonValueToLuaValue(v);
+            lua_settable(l, -3);
+        }
+    } break;
+    case QJsonValue::Object: {
+        QJsonObject ob = value.toObject();
+        lua_createtable(l, 0, ob.size());
+
+        foreach (const QString &key, ob.keys()) {
+            QJsonValue v = ob.value(key);
+            if (v.isNull())
+                continue;
+
+            convertJsonValueToLuaValue(v);
+            lua_setfield(l, -2, key.toUtf8().constData());
+        }
+    } break;
+    default:
+        // ??
+        break;
+    }
+}
+
 void Ai::receive()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
@@ -202,17 +261,14 @@ void Ai::receive()
     reply->deleteLater();
 
     QJsonDocument doc = QJsonDocument::fromJson(arr);
+    qDebug() << doc.toJson(QJsonDocument::Indented);
     QJsonObject ob = doc.object();
-    int value = ob.value(QStringLiteral("code")).toInt();
-    QString sending = ob.value("text").toString();
-    sending.replace(QRegExp("\\s"), QString());
 
     lua_getglobal(l, "tlReceive");
-    lua_pushinteger(l, value);
-    lua_pushstring(l, sending.toUtf8().constData());
+    convertJsonValueToLuaValue(QJsonValue(ob));
     lua_pushstring(l, from.toUtf8().constData());
     lua_pushstring(l, aiComment.toUtf8().constData());
-    pcall(4);
+    pcall(3);
 }
 
 void Ai::timeout()

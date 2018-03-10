@@ -411,17 +411,17 @@ end
 	end
 end
 
-tlReceive = function(value, sending, from)
+tlReceive = function(value, from)
 local tlReceive1 = function(value, sending, from)
 	me:debugOutput("tlReceive" .. value .. sending)
 	local toSend = ""
-	if (value == 100000) or (value == 40002) then
+	if value >= 10000 then
 		toSend = sending
 		toSend = string.gsub(toSend, "%s", "")
 		if toSend == data.lastSent then
 			toSend = getStringFromBase("senddup")
 		end
-	elseif value == 40004 then
+	elseif value == 4003 then
 		toSend = getStringFromBase("outoftime")
 		if not data.outoftime then
 			data.outoftimeDay = os.date("*t").day
@@ -445,7 +445,17 @@ local tlReceive1 = function(value, sending, from)
 
 	return toSend
 end
-	local toSend = tlReceive1(value, sending, from)
+	local code = value.intent.code
+	local text = ""
+	if value.result then
+		for _, result in ipairs(value.result) do
+			if result.resultType == "string" then
+				text = text .. result.values.text
+			end
+		end
+	end
+
+	local toSend = tlReceive1(code, text, from)
 	if toSend then
 		send(toSend)
 	elseif (data.sendingStep == 102) and (data.currentViewing.name == from) and (not data.currentViewing.cancel) then
