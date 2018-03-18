@@ -58,22 +58,21 @@ void Client::notifiedHeartBeat(const QJsonObject &contents)
 
 void Client::notifiedSignedIn(const QJsonObject &contents)
 {
-    emit addPlayer(contents.value("userName").toString(), contents.value("gender").toString());
+    emit addPlayer(contents.value(QStringLiteral("userName")).toString(), contents.value(QStringLiteral("gender")).toString());
 }
 
 void Client::notifiedSignedOut(const QJsonObject &contents)
 {
-    emit removePlayer(contents.value("userName").toString());
+    emit removePlayer(contents.value(QStringLiteral("userName")).toString());
 }
 
 void Client::notifiedQueryResult(const QJsonObject &contents)
 {
-    if (contents.contains("resv2")) {
-        //QJsonArray arr = contents.value("res").toArray();
-        QJsonObject ob = contents.value("resv2").toObject();
+    if (contents.contains(QStringLiteral("resv2"))) {
+        QJsonObject ob = contents.value(QStringLiteral("resv2")).toObject();
         foreach (const QString &str, ob.keys()) {
             if (str != selfName) {
-                QString gender = ob.value(str).toObject().value("gender").toString();
+                QString gender = ob.value(str).toObject().value(QStringLiteral("gender")).toString();
                 emit addPlayer(str, gender);
             }
         }
@@ -84,37 +83,37 @@ void Client::notifiedQueryResult(const QJsonObject &contents)
 
 void Client::notifiedSpoken(const QJsonObject &contents)
 {
-    QString from = contents.value("from").toString();
+    QString from = contents.value(QStringLiteral("from")).toString();
     QString to;
-    if (contents.contains("to"))
-        to = contents.value("to").toString();
+    if (contents.contains(QStringLiteral("to")))
+        to = contents.value(QStringLiteral("to")).toString();
     bool fromyou = (from == selfName);
     bool groupsent = to.isEmpty();
     bool toyou = false;
     if (!groupsent)
         toyou = (to == selfName);
-    QString content = contents.value("content").toString();
-    quint32 time = quint32(contents.value("time").toDouble());
+    QString content = contents.value(QStringLiteral("content")).toString();
+    quint32 time = quint32(contents.value(QStringLiteral("time")).toDouble());
 
     emit playerSpoken(from, to, content, fromyou, toyou, groupsent, time);
 }
 
 void Client::signIn()
 {
-    if (config.contains("tlset")) {
+    if (config.contains(QStringLiteral("tlset"))) {
         // currentTlSet has been read by readConfig
         QJsonObject ob = QJsonObject::fromVariantMap(currentTlset);
-        ob.remove("comments");
-        ob.remove("aiFile");
-        ob.remove("key");
-        selfName = ob.value("userName").toString();
-        ob["protocolValue"] = int(SP_SignIn);
+        ob.remove(QStringLiteral("comments"));
+        ob.remove(QStringLiteral("aiFile"));
+        ob.remove(QStringLiteral("key"));
+        selfName = ob.value(QStringLiteral("userName")).toString();
+        ob[QStringLiteral("protocolValue")] = int(SP_SignIn);
         QJsonDocument doc(ob);
         writeJsonDocument(doc);
 
         // read current online player
         QJsonObject ob2;
-        ob2["protocolValue"] = int(SP_Query);
+        ob2[QStringLiteral("protocolValue")] = int(SP_Query);
         QJsonDocument doc2(ob2);
         writeJsonDocument(doc2);
     }
@@ -146,11 +145,11 @@ void Client::socketReadyRead()
 void Client::speak(QString to, QString content)
 {
     QJsonObject ob;
-    ob["from"] = selfName;
+    ob[QStringLiteral("from")] = selfName;
     if (!to.isEmpty())
-        ob["to"] = to;
-    ob["content"] = content;
-    ob["protocolValue"] = int(SP_Speak);
+        ob[QStringLiteral("to")] = to;
+    ob[QStringLiteral("content")] = content;
+    ob[QStringLiteral("protocolValue")] = int(SP_Speak);
     QJsonDocument doc(ob);
     writeJsonDocument(doc);
 }
@@ -158,7 +157,7 @@ void Client::speak(QString to, QString content)
 void Client::sendHeartBeat()
 {
     QJsonObject ob;
-    ob["protocolValue"] = int(SP_Zero);
+    ob[QStringLiteral("protocolValue")] = int(SP_Zero);
     QJsonDocument doc(ob);
     writeJsonDocument(doc);
 }
@@ -166,8 +165,8 @@ void Client::sendHeartBeat()
 void Client::queryPlayerDetail(QString name)
 {
     QJsonObject ob2;
-    ob2["protocolValue"] = int(SP_Query);
-    ob2["userName"] = name;
+    ob2[QStringLiteral("protocolValue")] = int(SP_Query);
+    ob2[QStringLiteral("userName")] = name;
     QJsonDocument doc2(ob2);
     writeJsonDocument(doc2);
 }

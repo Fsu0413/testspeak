@@ -28,7 +28,7 @@ QVariantMap currentTlset;
 
 void readConfig()
 {
-    QFile f("config.json");
+    QFile f(QStringLiteral("config.json"));
     f.open(QFile::ReadOnly);
     QByteArray arr = f.readAll();
     f.close();
@@ -37,10 +37,10 @@ void readConfig()
     if (doc.isObject())
         config = doc.object().toVariantMap();
 
-    if (config.contains("tlset")) {
-        int tlset = config.value("tlset").toInt();
+    if (config.contains(QStringLiteral("tlset"))) {
+        int tlset = config.value(QStringLiteral("tlset")).toInt();
 
-        QFile tlf("tl.json");
+        QFile tlf(QStringLiteral("tl.json"));
         tlf.open(QFile::ReadOnly);
         QByteArray tlarr = tlf.readAll();
         tlf.close();
@@ -54,15 +54,15 @@ void readConfig()
 QString generateConfigString()
 {
     QString str;
-    static const QStringList l{"userName", "name", "gender"};
+    static const QStringList l{QStringLiteral("userName"), QStringLiteral("name"), QStringLiteral("gender")};
 
     foreach (const QString &i, l) {
         if (currentTlset.contains(i))
-            str.append(QString("%1: %2\n").arg(i).arg(currentTlset[i].toString()));
+            str.append(QStringLiteral("%1: %2\n").arg(i).arg(currentTlset[i].toString()));
     }
 
-    if (currentTlset.contains("age"))
-        str.append(QString("age: %1").arg(currentTlset["age"].toInt()));
+    if (currentTlset.contains(QStringLiteral("age")))
+        str.append(QStringLiteral("age: %1").arg(currentTlset[QStringLiteral("age")].toInt()));
 
     str = str.trimmed();
     return str;
@@ -78,14 +78,14 @@ Dialog::Dialog(QWidget *parent)
 
     userNames = new QListWidget;
     userNames->setSortingEnabled(false);
-    userNames->addItem("all");
+    userNames->addItem(QStringLiteral("all"));
 
-    userNames->setMinimumWidth(QFontMetrics(qApp->font()).width('Q') * 10);
-    userNames->setMaximumWidth(QFontMetrics(qApp->font()).width('Q') * 20);
+    userNames->setMinimumWidth(QFontMetrics(qApp->font()).width(QLatin1Char('Q')) * 10);
+    userNames->setMaximumWidth(QFontMetrics(qApp->font()).width(QLatin1Char('Q')) * 20);
 
     connect(userNames, &QListWidget::currentItemChanged, this, &Dialog::userNameChanged);
 
-    sendbtn = new QPushButton("send");
+    sendbtn = new QPushButton(QStringLiteral("send"));
     connect(sendbtn, &QPushButton::clicked, this, &Dialog::send);
 
     edit = new QLineEdit;
@@ -112,11 +112,11 @@ Dialog::Dialog(QWidget *parent)
 
     client = new Client(this);
 
-    if (config.contains("serverHost")) {
-        QString host = config.value("serverHost").toString();
+    if (config.contains(QStringLiteral("serverHost"))) {
+        QString host = config.value(QStringLiteral("serverHost")).toString();
         int port = 40001;
-        if (config.contains("serverPort"))
-            port = config.value("serverPort").toInt();
+        if (config.contains(QStringLiteral("serverPort")))
+            port = config.value(QStringLiteral("serverPort")).toInt();
 
         client->connectToHost(host, port);
     }
@@ -185,7 +185,7 @@ void Dialog::playerSpoken(QString from, QString to, QString content, bool fromYo
 
     QString relatedPerson;
     if (groupsent)
-        relatedPerson = "all";
+        relatedPerson = QStringLiteral("all");
     else if (fromYou)
         relatedPerson = to;
     else
@@ -213,14 +213,14 @@ void Dialog::playerSpoken(QString from, QString to, QString content, bool fromYo
 void Dialog::send()
 {
     if (!edit->text().isEmpty()) {
-        QString to = "all";
+        QString to = QStringLiteral("all");
         QListWidgetItem *item = userNames->currentItem();
         if (item == nullptr)
             return;
 
         to = userNames->currentItem()->text();
 
-        if (to == "all")
+        if (to == QStringLiteral("all"))
             to.clear();
 
         client->speak(to, edit->text());
@@ -280,17 +280,17 @@ void Dialog::refreshPlayerList()
         QListWidgetItem *item = userNames->item(i);
         if (item != nullptr) {
             QVariantMap playerData;
-            playerData["name"] = item->text();
-            if (item->text() != "all")
-                playerData["gender"] = item->data(GenderRole).toString();
-            playerData["hasUnreadMessage"] = item->data(HasUnreadMessageRole).toBool();
+            playerData[QStringLiteral("name")] = item->text();
+            if (item->text() != QStringLiteral("all"))
+                playerData[QStringLiteral("gender")] = item->data(GenderRole).toString();
+            playerData[QStringLiteral("hasUnreadMessage")] = item->data(HasUnreadMessageRole).toBool();
             playerList[item->text()] = playerData;
         }
     }
 
     QMutexLocker locker(&AiDataMutex);
     (void)locker;
-    AiData["players"] = playerList;
+    AiData[QStringLiteral("players")] = playerList;
 }
 
 void Dialog::refreshMessageList()
@@ -299,18 +299,18 @@ void Dialog::refreshMessageList()
     if (listWidget->count() > 0) {
         auto item = listWidget->item(listWidget->count() - 1);
         if (item != nullptr) {
-            message["from"] = item->data(FromRole).toString();
-            message["fromYou"] = item->data(FromYouRole).toBool();
-            message["toYou"] = item->data(ToYouRole).toBool();
-            message["groupSent"] = item->data(GroupSentRole).toBool();
-            message["time"] = item->data(TimeRole).toULongLong();
-            message["content"] = item->data(ContentRole).toString();
+            message[QStringLiteral("from")] = item->data(FromRole).toString();
+            message[QStringLiteral("fromYou")] = item->data(FromYouRole).toBool();
+            message[QStringLiteral("toYou")] = item->data(ToYouRole).toBool();
+            message[QStringLiteral("groupSent")] = item->data(GroupSentRole).toBool();
+            message[QStringLiteral("time")] = item->data(TimeRole).toULongLong();
+            message[QStringLiteral("content")] = item->data(ContentRole).toString();
         }
     }
 
     QMutexLocker locker(&AiDataMutex);
     (void)locker;
-    AiData["message"] = message;
+    AiData[QStringLiteral("message")] = message;
 }
 
 void Dialog::closeEvent(QCloseEvent *event)
@@ -348,9 +348,9 @@ void Dialog::updateList()
         if (detail.time != 0)
             timestr = QDateTime::fromTime_t(detail.time).time().toString();
         else
-            timestr = "at sometime";
+            timestr = QStringLiteral("at sometime");
 
-        QString x = QString("%1 %2:\n%3").arg(detail.from).arg(timestr).arg(detail.content);
+        QString x = QStringLiteral("%1 %2:\n%3").arg(detail.from).arg(timestr).arg(detail.content);
         QListWidgetItem *item = new QListWidgetItem(x);
         item->setTextColor(detail.fromYou ? Qt::blue : Qt::magenta);
 

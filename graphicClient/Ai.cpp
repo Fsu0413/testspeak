@@ -27,7 +27,7 @@ extern "C" {
 void luaopen_Ai(lua_State *l);
 }
 
-const QString packagePathStr = "package.path = package.path .. \";%1/ai/lib/?.lua\"";
+const QString packagePathStr = QStringLiteral("package.path = package.path .. \";%1/ai/lib/?.lua\"");
 
 void setMe(lua_State *l, Ai *ai);
 
@@ -55,12 +55,12 @@ void Ai::pcall(int argnum)
 
 QString Ai::name()
 {
-    return currentTlset["name"].toString();
+    return currentTlset[QStringLiteral("name")].toString();
 }
 
 QString Ai::gender()
 {
-    return currentTlset["gender"].toString();
+    return currentTlset[QStringLiteral("gender")].toString();
 }
 
 QString Ai::getPlayerGender(const QString &name)
@@ -70,8 +70,8 @@ QString Ai::getPlayerGender(const QString &name)
     QMutexLocker locker(&AiDataMutex);
     (void)locker;
 
-    QVariantMap playerDetail = AiData.value("players").toMap().value(name).toMap();
-    return playerDetail.value("gender").toString();
+    QVariantMap playerDetail = AiData.value(QStringLiteral("players")).toMap().value(name).toMap();
+    return playerDetail.value(QStringLiteral("gender")).toString();
 }
 
 void Ai::queryTl(const QString &id, const QString &content, const QString &_key, const QString &aiComment)
@@ -80,11 +80,11 @@ void Ai::queryTl(const QString &id, const QString &content, const QString &_key,
 
     QString key = _key;
     if (_key.isEmpty())
-        key = currentTlset["key"].toString();
+        key = currentTlset[QStringLiteral("key")].toString();
 
-    ob["key"] = QJsonValue(key);
-    ob["userid"] = QJsonValue(id);
-    ob["info"] = QJsonValue(content);
+    ob[QStringLiteral("key")] = QJsonValue(key);
+    ob[QStringLiteral("userid")] = QJsonValue(id);
+    ob[QStringLiteral("info")] = QJsonValue(content);
 
     QJsonDocument doc(ob);
 
@@ -141,12 +141,12 @@ QStringList Ai::newMessagePlayers()
     emit refreshPlayerList();
 
     QStringList r;
-    QVariantMap playerDetail = AiData.value("players").toMap();
+    QVariantMap playerDetail = AiData.value(QStringLiteral("players")).toMap();
 
     foreach (const QVariant &detailVariant, playerDetail) {
         QVariantMap detail = detailVariant.toMap();
-        if (detail["hasUnreadMessage"].toBool())
-            r.append(detail["name"].toString());
+        if (detail[QStringLiteral("hasUnreadMessage")].toBool())
+            r.append(detail[QStringLiteral("name")].toString());
     }
 
     return r;
@@ -159,7 +159,7 @@ QStringList Ai::onlinePlayers()
     QMutexLocker locker(&AiDataMutex);
     (void)locker;
 
-    return AiData.value("players").toMap().keys();
+    return AiData.value(QStringLiteral("players")).toMap().keys();
 }
 
 SpeakDetail Ai::getNewestSpokenMessage()
@@ -175,17 +175,17 @@ SpeakDetail Ai::getNewestSpokenMessage()
     QMutexLocker locker(&AiDataMutex);
     (void)locker;
 
-    QVariantMap message = AiData["message"].toMap();
+    QVariantMap message = AiData[QStringLiteral("message")].toMap();
 
     if (message.isEmpty())
         return detail;
 
-    detail.from = message["from"].toString();
-    detail.fromYou = message["fromYou"].toBool();
-    detail.toYou = message["toYou"].toBool();
-    detail.groupSent = message["groupSent"].toBool();
-    detail.time = message["time"].toULongLong();
-    detail.content = message["content"].toString();
+    detail.from = message[QStringLiteral("from")].toString();
+    detail.fromYou = message[QStringLiteral("fromYou")].toBool();
+    detail.toYou = message[QStringLiteral("toYou")].toBool();
+    detail.groupSent = message[QStringLiteral("groupSent")].toBool();
+    detail.time = message[QStringLiteral("time")].toULongLong();
+    detail.content = message[QStringLiteral("content")].toString();
 
     return detail;
 }
@@ -204,8 +204,8 @@ void Ai::receive()
     QJsonDocument doc = QJsonDocument::fromJson(arr);
     QJsonObject ob = doc.object();
     int value = ob.value(QStringLiteral("code")).toInt();
-    QString sending = ob.value("text").toString();
-    sending.replace(QRegExp("\\s"), QString());
+    QString sending = ob.value(QStringLiteral("text")).toString();
+    sending.replace(QRegExp(QStringLiteral("\\s")), QString());
 
     lua_getglobal(l, "tlReceive");
     lua_pushinteger(l, value);
@@ -259,8 +259,8 @@ void Ai::start()
     luaopen_Ai(l);
     setMe(l, this);
 
-    if (currentTlset.contains("aiFile")) {
-        if (luaL_dofile(l, currentTlset.value("aiFile").toString().toLocal8Bit().constData()) != LUA_OK) {
+    if (currentTlset.contains(QStringLiteral("aiFile"))) {
+        if (luaL_dofile(l, currentTlset.value(QStringLiteral("aiFile")).toString().toLocal8Bit().constData()) != LUA_OK) {
             QString err = QString::fromUtf8(lua_tostring(l, -1));
             qDebug() << err;
             lua_pop(l, 1);
