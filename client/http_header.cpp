@@ -44,30 +44,6 @@ int HTTPHeader::erase(const std::string key)
     return 0;
 }
 
-int HTTPHeader::modify(const std::string key, const std::string value)
-{
-    if (key.length() == 0 || value.length() == 0)
-        return 1;
-    std::map<std::string, std::string>::iterator itr = _header->find(key);
-    if (itr != _header->end())
-        return 1;
-    _header->erase(itr);
-    _header->insert(itr, HTTPHeaderLine(key, value));
-    return 0;
-}
-
-int HTTPHeader::modify(const HTTPHeaderLine line)
-{
-    if (line.first.length() == 0 || line.second.length() == 0)
-        return 1;
-    std::map<std::string, std::string>::iterator itr = _header->find(line.first);
-    if (itr != _header->end())
-        return 1;
-    _header->erase(itr);
-    _header->insert(itr, line);
-    return 0;
-}
-
 std::string HTTPHeader::to_string()
 {
     std::string dst;

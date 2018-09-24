@@ -9,7 +9,15 @@
 #include <string>
 #include <sys/types.h>
 
-#ifdef __GNU_LINUX__
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+//#pragma comment(lib, "wsock32.lib")
+//#pragma comment(lib, "ws2_32.lib")
+//typedef unsigned short int uint16_t;
+//typedef unsigned long int uint32_t;
+//typedef int ssize_t;
+#else
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <sys/socket.h>
@@ -18,20 +26,10 @@ typedef int SOCKET;
 const int INVALID_SOCKET = -1;
 #endif //__GNU_LINUX__
 
-#ifdef __MS_WIN32__
-#include <winsock2.h>
-#include <ws2tcpip.h>
-//#pragma comment(lib, "wsock32.lib")
-//#pragma comment(lib, "ws2_32.lib")
-//typedef unsigned short int uint16_t;
-//typedef unsigned long int uint32_t;
-//typedef int ssize_t;
-#endif //__MS_WIN32__
-
 class TCPClient
 {
 private:
-#ifdef __MS_WIN32__
+#ifdef _WIN32
     WSADATA wsaData;
 #endif // __MS_WIN32__
 
@@ -68,6 +66,6 @@ public:
 
 int hostname2ipaddr(const char *, char *);
 std::string hostname2ipaddr(const char *);
-std::string hostname2ipaddr(const std::string);
+std::string hostname2ipaddr(const std::string &);
 
 #endif

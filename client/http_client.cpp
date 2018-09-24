@@ -25,8 +25,10 @@ int HTTPClient::splitURL(const std::string *url, std::string *ptcl, std::string 
 
     std::string::size_type protocol_pos_end = _url->find_first_of("://");
     ptcl->assign(_url->substr(0, protocol_pos_end));
-    if (!((ptcl->compare("http") == 0) || (ptcl->compare("https") == 0)))
+    if (!((ptcl->compare("http") == 0) || (ptcl->compare("https") == 0))) {
+        delete _url;
         return -1;
+    }
 
     _url->erase(0, protocol_pos_end + 3);
 
@@ -86,9 +88,8 @@ uint32_t HTTPClient::receive_by_line(TCPClient *client, char *buf, uint32_t buf_
                     if (length.length() != 0) {
                         std::istringstream iss(length);
                         iss >> contentLength;
-                        uint32_t oversize = 0;
                         if (contentLength + received > buf_size) {
-                            oversize = (contentLength + received) - buf_size;
+                            uint32_t oversize = (contentLength + received) - buf_size;
                             contentLength -= oversize;
                         }
 

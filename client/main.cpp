@@ -12,7 +12,7 @@ using namespace std;
 
 struct tlData
 {
-    tlData(string key, string userId)
+    tlData(const string &key, const string &userId)
         : key(key)
         , userId(userId)
     {
@@ -24,7 +24,7 @@ struct tlData
 
 vector<tlData> TLData;
 
-string talk(string toSend)
+string talk(const string &toSend)
 {
     Json::Value v(Json::objectValue);
     v["key"] = TLData.at(0).key;
@@ -72,7 +72,6 @@ string talk(string toSend)
                 string st = value["text"].asString();
                 regex re("\\s");
                 return regex_replace(st, re, "");
-                break;
             }
             default:
                 return "Hello";

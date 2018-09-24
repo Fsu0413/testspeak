@@ -5,7 +5,7 @@
 
 TCPClient::TCPClient()
 {
-#ifdef __MS_WIN32__
+#ifdef _WIN32
     WSAStartup(MAKEWORD(2, 0), &wsaData);
 #endif
     _init_flag = false;
@@ -25,10 +25,9 @@ int TCPClient::create_socket(uint32_t port, const char *ip_addr_str)
     _sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (_sock == INVALID_SOCKET) {
         _err_mesg = "Cannot open socket.";
-#ifdef __MS_WIN32__
+#ifdef _WIN32
         _err_no = WSAGetLastError();
-#endif
-#ifdef __GNU_LINUX__
+#else
         _err_no = errno;
 #endif
         return -1;
@@ -53,10 +52,9 @@ int TCPClient::connect(uint32_t port, const char *ip_addr_str)
 
     if (::connect(_sock, (struct sockaddr *)&_dst_addr_in, sizeof(struct sockaddr_in)) == -1) {
         _err_mesg = "Cannot connect socket.";
-#ifdef __MS_WIN32__
+#ifdef _WIN32
         _err_no = WSAGetLastError();
-#endif
-#ifdef __GNU_LINUX__
+#else
         _err_no = errno;
 #endif
         return -1;
@@ -69,11 +67,10 @@ int TCPClient::connect(uint32_t port, const char *ip_addr_str)
 
 int TCPClient::disconnect()
 {
-#ifdef __GNU_LINUX__
-    close(_sock);
-#endif
-#ifdef __MS_WIN32__
+#ifdef _WIN32
     WSACleanup();
+#else
+    close(_sock);
 #endif
     _init_flag = false;
     return 0;
@@ -97,10 +94,9 @@ int TCPClient::send(const char *buffer, int flags)
         ssize_t ret = ::send(_sock, buffer, buf_size, flags);
         if (ret == -1) {
             _err_mesg = "Cannot send buffer.";
-#ifdef __MS_WIN32__
+#ifdef _WIN32
             _err_no = WSAGetLastError();
-#endif
-#ifdef __GNU_LINUX__
+#else
             _err_no = errno;
 #endif
             return -1;
@@ -124,10 +120,9 @@ int TCPClient::send(const char *buffer, int length, int flags)
         ssize_t ret = ::send(_sock, buffer + send_size, buf_size - send_size, flags);
         if (ret == -1) {
             _err_mesg = "Cannot send buffer.";
-#ifdef __MS_WIN32__
+#ifdef _WIN32
             _err_no = WSAGetLastError();
-#endif
-#ifdef __GNU_LINUX__
+#else
             _err_no = errno;
 #endif
             return -1;
@@ -151,10 +146,9 @@ int TCPClient::recive(char *buffer, int length, int flags)
         ssize_t ret = ::recv(_sock, buffer + recive_size, buf_size - recive_size, flags);
         if (ret == -1) {
             _err_mesg = "Cannot recive buffer.";
-#ifdef __MS_WIN32__
+#ifdef _WIN32
             _err_no = WSAGetLastError();
-#endif
-#ifdef __GNU_LINUX__
+#else
             _err_no = errno;
 #endif
             return -1;
@@ -205,13 +199,8 @@ int hostname2ipaddr(const char *hostname, char *ipaddr)
     }
 
     char *_addr_str = inet_ntoa(((struct sockaddr_in *)response->ai_addr)->sin_addr);
-#ifdef __GNU_LINUX__
     strncpy(ipaddr, _addr_str, strlen(_addr_str) + 1);
-#endif
-#ifdef __MS_WIN32__
-    //strncpy_s(ipaddr, _addr_str, strlen(_addr_str)+1);
-    strncpy_s(ipaddr, 0xFF, (const char *)_addr_str, strlen(_addr_str) + 1);
-#endif
+
     freeaddrinfo(response);
 
     return 0;
@@ -225,7 +214,7 @@ std::string hostname2ipaddr(const char *hostname)
     return std::string(ipaddr);
 }
 
-std::string hostname2ipaddr(const std::string hostname)
+std::string hostname2ipaddr(const std::string &hostname)
 {
     char ipaddr[0xFF];
     if (hostname2ipaddr(hostname.c_str(), ipaddr) != 0)
