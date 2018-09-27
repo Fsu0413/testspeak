@@ -3,3 +3,14 @@
 *.o
 /client/test1.exe
 /client/test1
+/client/autom4te.cache/
+/client/aclocal.m4
+/client/compile
+/client/confdefs.h
+/client/config.log
+/client/configure
+/client/depcomp
+/client/install-sh
+/client/Makefile.in
+/client/missing
+/client/.deps/
