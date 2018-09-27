@@ -36,12 +36,15 @@ QMutex AiDataMutex;
 
 Ai::Ai(Dialog *dialog)
     : dialog(dialog)
+    , nam1(nullptr)
+    , l(nullptr)
 {
 }
 
 Ai::~Ai()
 {
-    lua_close(l);
+    if (l != nullptr)
+        lua_close(l);
 }
 
 void Ai::pcall(int argnum)
