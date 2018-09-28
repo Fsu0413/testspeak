@@ -84,7 +84,7 @@ string talk(const string &toSend)
     return "Hello";
 }
 
-#ifdef __GNU_LINUX__
+#ifndef _WIN32
 static inline void Sleep(uint32_t t)
 {
     usleep(t * 1000);
@@ -108,7 +108,7 @@ void randomSleep(const string &str)
     Sleep(std::random_device()() % (a - i) + i + n);
 }
 
-extern "C" int main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     TLData.push_back(tlData(string("095669531b59423db7f615dfa84771f5"), string("v1")));
 
