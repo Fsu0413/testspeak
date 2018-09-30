@@ -9,14 +9,10 @@ int main(int argc, char *argv[])
     (void)argv;
 
     asio::io_context io_context;
-    try {
-        Server server(io_context);
-        (void)server;
-        io_context.run();
-        return 0;
-    } catch (...) {
-        return 1;
-    }
+    Server server(io_context);
+    (void)server;
+    io_context.run();
+    return 0;
 }
 
 ///*

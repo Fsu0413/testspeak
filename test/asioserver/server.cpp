@@ -36,6 +36,7 @@ public:
         , failFunc(nullptr)
 
     {
+        doAsyncReadLine();
     }
 
     asio::ip::tcp::socket *s()
@@ -258,6 +259,8 @@ void ServerImpl::listen()
         std::cout << ep.address().to_string() << "," << ep.port() << " connected." << std::endl;
         wrapper->registerLineRead(&lineRead);
         wrapper->registerFail(&fail);
+
+        listen();
     });
 }
 

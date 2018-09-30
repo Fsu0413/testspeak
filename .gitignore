@@ -1,5 +1,5 @@
 *.user
-/build-*
+build-*
 *.o
 /client/test1.exe
 /client/test1
