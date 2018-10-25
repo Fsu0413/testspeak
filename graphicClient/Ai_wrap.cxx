@@ -2697,7 +2697,13 @@ typedef struct{} LANGUAGE_OBJ;
 
 #include "Ai.h"
 #include "client.h"
+
+#ifdef GRAPHICSCLIENT
 #include "dialog.h"
+#else
+#include "console.h"
+#endif
+
 #include <QString>
 
 

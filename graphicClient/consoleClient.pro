@@ -4,8 +4,10 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network widgets
+QT       += core network
+QT -= gui widgets
 
+CONFIG += console
 
 TARGET = graphicClient
 TEMPLATE = app
@@ -15,7 +17,7 @@ CONFIG -= app_bundle
 # any feature of Qt which as been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
-DEFINES += QT_DEPRECATED_WARNINGS _CRT_SECURE_NO_WARNINGS QT_NO_CAST_FROM_ASCII GRAPHICSCLIENT
+DEFINES += QT_DEPRECATED_WARNINGS _CRT_SECURE_NO_WARNINGS QT_NO_CAST_FROM_ASCII CONSOLECLIENT
 
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -24,8 +26,7 @@ DEFINES += QT_DEPRECATED_WARNINGS _CRT_SECURE_NO_WARNINGS QT_NO_CAST_FROM_ASCII 
 
 
 SOURCES += \
-        main.cpp \
-        dialog.cpp client.cpp \
+        client.cpp \
     lua/lapi.c \
     lua/lauxlib.c \
     lua/lbaselib.c \
@@ -58,10 +59,12 @@ SOURCES += \
     lua/lundump.c \
     lua/lvm.c \
     lua/lzio.c \
-    Ai.cpp Ai_wrap.cxx
+    Ai.cpp Ai_wrap.cxx \
+    console.cpp \
+    consolemain.cpp
 
 HEADERS += \
-        dialog.h client.h \
+         client.h \
     lua/lapi.h \
     lua/lauxlib.h \
     lua/lcode.h \
@@ -87,7 +90,8 @@ HEADERS += \
     lua/lundump.h \
     lua/lvm.h \
     lua/lzio.h \
-    Ai.h
+    Ai.h \
+    console.h
 
 INCLUDEPATH += $$_PRO_FILE_PWD_/lua
 

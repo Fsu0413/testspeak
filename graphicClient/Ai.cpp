@@ -3,19 +3,16 @@
 #include "client.h"
 #include "lua.hpp"
 
-#include <QApplication>
+#include <QCoreApplication>
 #include <QDir>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
-#include <QLineEdit>
-#include <QListWidget>
 #include <QMap>
 #include <QMutex>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QPushButton>
 #include <QThread>
 #include <QTimer>
 #include <QUrl>
