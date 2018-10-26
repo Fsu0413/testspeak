@@ -12,37 +12,20 @@
 #include <QMutex>
 #include <QThread>
 
-struct ConsoleListItem
-{
-    QString text;
-    QMap<int, QVariant> data;
-};
-
-class ConsoleList : public QObject
+class ConsoleButton : public QObject
 {
     Q_OBJECT
 
 public:
-    ~ConsoleList();
-
-    QList<ConsoleListItem *> item;
-    int selected;
-
-signals:
-    void selectedChanged();
-};
-
-class ConsoleButton : public QObject
-{
-    Q_OBJECT
+    ConsoleButton(QObject *parent);
 
 signals:
     void clicked();
 };
 
-ConsoleList::~ConsoleList()
+ConsoleButton::ConsoleButton(QObject *parent)
+    : QObject(parent)
 {
-    qDeleteAll(item);
 }
 
 QVariantMap config;
@@ -95,16 +78,12 @@ Dialog::Dialog(QObject *parent)
 {
     readConfig();
 
-    listWidget = new ConsoleList;
-    userNames = new ConsoleList;
-    userNames->selected = -1;
-    ConsoleListItem *allItem = new ConsoleListItem;
-    allItem->text = QStringLiteral("all");
-    userNames->item << allItem;
+    PlayerDetail *detail = new PlayerDetail;
+    detail->name = QStringLiteral("all");
+    detail->hasUnreadMessage = false;
+    playerMap[QStringLiteral("all")] = detail;
 
-    connect(userNames, &ConsoleList::selectedChanged, this, &Dialog::userNameChanged);
-
-    sendBtn = new ConsoleButton;
+    sendBtn = new ConsoleButton(this);
     connect(sendBtn, &ConsoleButton::clicked, this, &Dialog::send);
 
     client = new Client(this);
@@ -143,26 +122,22 @@ Dialog::~Dialog()
 
 void Dialog::addPlayer(QString name, QString gender)
 {
-    ConsoleListItem *allItem = new ConsoleListItem;
-    allItem->text = name;
-    allItem->data[GenderRole] = gender;
-    userNames->item << allItem;
+    PlayerDetail *detail = new PlayerDetail;
+    detail->name = name;
+    detail->gender = gender;
+    detail->hasUnreadMessage = false;
+    playerMap[name] = detail;
 }
 
 void Dialog::removePlayer(QString name)
 {
-    for (int i = 0; i < userNames->item.length(); ++i) {
-        ConsoleListItem *item = userNames->item[i];
-        if (item->text == name) {
-            if (userNames->selected == i) {
-                userNames->selected = -1;
-                emit userNames->selectedChanged();
-            }
-
-            delete userNames->item.takeAt(i);
-            i = -1;
-        }
+    if (speakTo == name) {
+        speakTo.clear();
+        userNameChanged();
     }
+
+    if (playerMap.contains(name))
+        delete playerMap.take(name);
 
     if (speakMap.contains(name))
         delete speakMap.take(name);
@@ -198,24 +173,19 @@ void Dialog::playerSpoken(QString from, QString to, QString content, bool fromYo
     if (speakMap[relatedPerson]->length() > 100)
         speakMap[relatedPerson]->takeFirst();
 
-    if (!fromYou) {
-        foreach (ConsoleListItem *item, userNames->item) {
-            if (item->text == relatedPerson)
-                item->data[HasUnreadMessageRole] = true;
-        }
-    }
-
-    updateList();
+    if (!fromYou && playerMap.contains(relatedPerson) && speakTo != relatedPerson)
+        playerMap[relatedPerson]->hasUnreadMessage = true;
 }
 
 void Dialog::send()
 {
     if (!edit.isEmpty()) {
         QString to = QStringLiteral("all");
-        if (userNames->selected == -1)
+
+        if (speakTo.isNull())
             return;
 
-        to = userNames->item[userNames->selected]->text;
+        to = speakTo;
 
         if (to == QStringLiteral("all"))
             to.clear();
@@ -227,19 +197,15 @@ void Dialog::send()
 
 void Dialog::userNameChanged()
 {
-    if (userNames->selected != -1)
-        userNames->item[userNames->selected]->data[HasUnreadMessageRole] = false;
-
-    updateList();
+    if (playerMap.contains(speakTo))
+        playerMap[speakTo]->hasUnreadMessage = false;
 }
 
 void Dialog::setNameCombo(const QString &name)
 {
-    for (int i = 0; i < userNames->item.length(); ++i) {
-        if (userNames->item[i]->text == name) {
-            userNames->selected = i;
-            emit userNames->selectedChanged();
-        }
+    if (playerMap.contains(name)) {
+        speakTo = name;
+        userNameChanged();
     }
 }
 
@@ -264,14 +230,13 @@ void Dialog::sendClick()
 void Dialog::refreshPlayerList()
 {
     QVariantMap playerList;
-    for (int i = 0; i < userNames->item.length(); ++i) {
-        ConsoleListItem *item = userNames->item[i];
+    foreach (PlayerDetail *detail, playerMap) {
         QVariantMap playerData;
-        playerData[QStringLiteral("name")] = item->text;
-        if (item->text != QStringLiteral("all"))
-            playerData[QStringLiteral("gender")] = item->data[GenderRole].toString();
-        playerData[QStringLiteral("hasUnreadMessage")] = item->data[HasUnreadMessageRole].toBool();
-        playerList[item->text] = playerData;
+        playerData[QStringLiteral("name")] = detail->name;
+        if (detail->name != QStringLiteral("all"))
+            playerData[QStringLiteral("gender")] = detail->gender;
+        playerData[QStringLiteral("hasUnreadMessage")] = detail->hasUnreadMessage;
+        playerList[detail->name] = playerData;
     }
 
     QMutexLocker locker(&AiDataMutex);
@@ -282,58 +247,25 @@ void Dialog::refreshPlayerList()
 void Dialog::refreshMessageList()
 {
     QVariantMap message;
+    QString name = speakTo;
 
-    if (listWidget->item.length() > 0) {
-        ConsoleListItem *item = listWidget->item.last();
-        message[QStringLiteral("from")] = item->data[FromRole].toString();
-        message[QStringLiteral("fromYou")] = item->data[FromYouRole].toBool();
-        message[QStringLiteral("toYou")] = item->data[ToYouRole].toBool();
-        message[QStringLiteral("groupSent")] = item->data[GroupSentRole].toBool();
-        message[QStringLiteral("time")] = item->data[TimeRole].toULongLong();
-        message[QStringLiteral("content")] = item->data[ContentRole].toString();
+    if (speakMap.contains(name)) {
+        QList<SpeakDetail> *details = speakMap[name];
+        if (details->length() > 0) {
+            const SpeakDetail &detail = details->last();
+
+            message[QStringLiteral("from")] = detail.from;
+            message[QStringLiteral("fromYou")] = detail.fromYou;
+            message[QStringLiteral("toYou")] = detail.toYou;
+            message[QStringLiteral("groupSent")] = detail.groupSent;
+            message[QStringLiteral("time")] = qlonglong(detail.time);
+            message[QStringLiteral("content")] = detail.content;
+        }
     }
 
     QMutexLocker locker(&AiDataMutex);
     (void)locker;
     AiData[QStringLiteral("message")] = message;
-}
-
-void Dialog::updateList()
-{
-    qDeleteAll(listWidget->item);
-
-    QString name;
-    if (userNames->selected != -1)
-        name = userNames->item[userNames->selected]->text;
-
-    if (name.isEmpty())
-        return;
-
-    if (!speakMap.contains(name))
-        return;
-
-    QList<SpeakDetail> *details = speakMap[name];
-    foreach (const SpeakDetail &detail, *details) {
-        QString timestr;
-        if (detail.time != 0)
-            timestr = QDateTime::fromTime_t(detail.time).time().toString();
-        else
-            timestr = QStringLiteral("at sometime");
-
-        QString x = QStringLiteral("%1 %2:\n%3").arg(detail.from).arg(timestr).arg(detail.content);
-
-        ConsoleListItem *item = new ConsoleListItem;
-        item->text = x;
-
-        item->data[FromRole] = detail.from;
-        item->data[FromYouRole] = detail.fromYou;
-        item->data[TimeRole] = qlonglong(detail.time);
-        item->data[ContentRole] = detail.content;
-        item->data[ToYouRole] = detail.toYou;
-        item->data[GroupSentRole] = detail.groupSent;
-
-        listWidget->item << item;
-    }
 }
 
 #include "console.moc"

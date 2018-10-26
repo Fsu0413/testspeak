@@ -11,7 +11,7 @@ class QThread;
 
 enum SpeakRole
 {
-    SpeakRole__QtUserRole = Qt::UserRole,
+    //SpeakRole__QtUserRole = Qt::UserRole,
 
     FromRole,
     FromYouRole,
@@ -23,7 +23,7 @@ enum SpeakRole
 
 enum PlayerRole
 {
-    PlayerRole__QtUserRole = Qt::UserRole,
+    //PlayerRole__QtUserRole = Qt::UserRole,
 
     HasUnreadMessageRole,
     GenderRole,
@@ -39,7 +39,13 @@ struct SpeakDetail
     QString content;
 };
 
-class ConsoleList;
+struct PlayerDetail
+{
+    QString name;
+    QString gender;
+    bool hasUnreadMessage;
+};
+
 class ConsoleButton;
 
 class Dialog : public QObject
@@ -54,9 +60,9 @@ public:
     QThread *aiThread;
 
     QMap<QString, QList<SpeakDetail> *> speakMap;
+    QMap<QString, PlayerDetail *> playerMap;
 
-    ConsoleList *listWidget;
-    ConsoleList *userNames;
+    QString speakTo;
     QString edit;
     ConsoleButton *sendBtn;
 
