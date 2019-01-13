@@ -11,7 +11,7 @@ class QThread;
 
 enum SpeakRole
 {
-    //SpeakRole__QtUserRole = Qt::UserRole,
+    SpeakRole__QtUserRole = Qt::UserRole,
 
     FromRole,
     FromYouRole,
@@ -23,7 +23,7 @@ enum SpeakRole
 
 enum PlayerRole
 {
-    //PlayerRole__QtUserRole = Qt::UserRole,
+    PlayerRole__QtUserRole = Qt::UserRole,
 
     HasUnreadMessageRole,
     GenderRole,
