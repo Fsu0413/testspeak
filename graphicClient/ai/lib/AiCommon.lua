@@ -1,16 +1,22 @@
 
 local AiCommon = {}
 
-
 AiCommon.UserTimerId = 100
 AiCommon.Callbacks = {}
+
+AiCommon.TimerConsts = {
+	["outoftimeTimeout"] = 1000,
+	["thinkDelay"] = 5000,
+	["clickDelay"] = 200,
+	["typeDelay"] = 100,
+	["sendDelay"] = 1500,
+}
 
 local data = {
 	onlinePlayers = {},
 	newMessagePlayers = {},
 	newestMessage = {},
 }
-
 
 local consts = {
 	["GetNewestInfoTimerId"] = 1,

@@ -78,6 +78,8 @@ Dialog::Dialog(QObject *parent)
 {
     readConfig();
 
+    qDebug() << generateConfigString().split(QStringLiteral("\n"));
+
     PlayerDetail *detail = new PlayerDetail;
     detail->name = QStringLiteral("all");
     detail->hasUnreadMessage = false;
@@ -148,6 +150,9 @@ void Dialog::playerDetail(QJsonObject)
 
 void Dialog::playerSpoken(QString from, QString to, QString content, bool fromYou, bool toYou, bool groupsent, quint32 time)
 {
+    QString dbg = QStringLiteral("Said: %1 to %2: %3").arg(from).arg(to).arg(content);
+    qDebug() << dbg;
+
     SpeakDetail x;
     x.content = content;
     x.from = from;
@@ -226,6 +231,8 @@ void Dialog::sendRelease()
 
 void Dialog::sendClick()
 {
+    QString dbg = QStringLiteral("Send: %1: %2").arg(speakTo).arg(edit);
+    qDebug() << dbg;
     emit sendBtn->clicked();
 }
 

@@ -31,19 +31,10 @@ data = {
 consts = {
 	["findPersonTimerId"] = AiCommon.UserTimerId + 1,
 	["findPersonTimeout"] = 200000,
-
 	["timeoutTimerId"] = AiCommon.UserTimerId + 2,
 	["timeoutTimeout"] = 300000,
-
 	["operationTimerId"] = AiCommon.UserTimerId + 3,
-
 	["outoftimeTimerId"] = AiCommon.UserTimerId + 4,
-	["outoftimeTimeout"] = 1000,
-
-	["thinkdelay"] = 5000,
-	["clickDelay"] = 200,
-	["typeDelay"] = 100,
-	["sendDelay"] = 1500,
 }
 
 base = {
@@ -119,7 +110,7 @@ sendingstep = function()
 			local toview = data.toview[1]
 			data.currentViewing = toview
 			data.sendingStep = 101
-			timer = consts.sendDelay
+			timer = AiCommon.TimerConsts.sendDelay
 			table.remove(data.toview, 1)
 		end
 	elseif data.sendingStep == 3 then
@@ -129,16 +120,16 @@ sendingstep = function()
 			data.sending = ""
 			data.typed = ""
 			me:setText("")
-			timer = consts.sendDelay
+			timer = AiCommon.TimerConsts.sendDelay
 		else
 			if data.sending == "" then
 				data.sendingStep = 4
-				timer = consts.sendDelay
+				timer = AiCommon.TimerConsts.sendDelay
 			else
 				data.typed = data.typed .. me:getFirstChar(data.sending)
 				data.sending = me:removeFirstChar(data.sending)
 				me:setText(data.typed)
-				timer = consts.typeDelay
+				timer = AiCommon.TimerConsts.typeDelay
 			end
 		end
 	elseif data.sendingStep == 4 then
@@ -148,12 +139,12 @@ sendingstep = function()
 			data.sending = ""
 			data.typed = ""
 			me:setText("")
-			timer = consts.sendDelay
+			timer = AiCommon.TimerConsts.sendDelay
 		else
 			me:sendPress()
 			data.sendpressed = true
 			data.sendingStep = 5
-			timer = consts.clickDelay
+			timer = AiCommon.TimerConsts.clickDelay
 		end
 	elseif data.sendingStep == 5 then
 		if data.currentViewing.cancel then
@@ -163,18 +154,18 @@ sendingstep = function()
 			data.sending = ""
 			data.typed = ""
 			me:setText("")
-			timer = consts.sendDelay
+			timer = AiCommon.TimerConsts.sendDelay
 		else
 			me:sendClick()
 			data.sendpressed = false
 			data.sendingStep = 0
 			data.currentViewing = {}
-			timer = consts.sendDelay
+			timer = AiCommon.TimerConsts.sendDelay
 		end
 	elseif data.sendingStep == 101 then
 		data.sendingStep = 102
 		me:setNameCombo(data.currentViewing.name)
-		timer = consts.sendDelay
+		timer = AiCommon.TimerConsts.sendDelay
 	elseif data.sendingStep == 102 then
 		if not data.currentViewing.time then
 			data.currentViewing.time = os.time()
@@ -188,13 +179,13 @@ sendingstep = function()
 		if data.currentViewing.cancel then
 			data.currentViewing = {}
 			data.sendingStep = 0
-			timer = consts.sendDelay
+			timer = AiCommon.TimerConsts.sendDelay
 		elseif data.currentViewing.content then
 			data.sending = data.currentViewing.content
 			data.typed = ""
 			me:setTextFocus()
 			data.sendingStep = 3
-			timer = consts.thinkdelay
+			timer = AiCommon.TimerConsts.thinkDelay
 		end
 	end
 
@@ -438,7 +429,7 @@ local tlReceive1 = function(value, sending, from)
 		toSend = getStringFromBase("outoftime")
 		if not data.outoftime then
 			data.outoftimeDay = os.date("*t").day
-			me:addTimer(consts.outoftimeTimerId, consts.outoftimeTimeout)
+			me:addTimer(consts.outoftimeTimerId, AiCommon.TimerConsts.outoftimeTimeout)
 			data.outoftime = true
 		end
 
@@ -503,7 +494,7 @@ timeout = function(timerid)
 				send(getStringFromBase("revive"))
 			end
 		else
-			me:addTimer(consts.outoftimeTimerId, consts.outoftimeTimeout)
+			me:addTimer(consts.outoftimeTimerId, AiCommon.TimerConsts.outoftimeTimeout)
 		end
 	else
 		AiCommon.timeout(timerid)
