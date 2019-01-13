@@ -77,6 +77,7 @@ public slots:
 
     // queued connection
     void setNameCombo(const QString &name);
+    void setTextFocus();
     void setText(const QString &text);
     void sendPress();
     void sendRelease();

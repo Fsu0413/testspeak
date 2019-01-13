@@ -192,7 +192,7 @@ sendingstep = function()
 		elseif data.currentViewing.content then
 			data.sending = data.currentViewing.content
 			data.typed = ""
-			me:setText("")
+			me:setTextFocus()
 			data.sendingStep = 3
 			timer = consts.thinkdelay
 		end

@@ -112,10 +112,8 @@ Dialog::Dialog(QObject *parent)
 
 Dialog::~Dialog()
 {
-    while (!aiThread->isFinished()) {
-        qDebug() << "wait";
+    while (!aiThread->isFinished())
         aiThread->wait(1000);
-    }
 
     qDeleteAll(speakMap);
 }
@@ -212,6 +210,10 @@ void Dialog::setNameCombo(const QString &name)
 void Dialog::setText(const QString &text)
 {
     edit = text;
+}
+
+void Dialog::setTextFocus()
+{
 }
 
 void Dialog::sendPress()

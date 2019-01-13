@@ -69,6 +69,7 @@ signals:
     // queued connection
     void setNameCombo(const QString &name);
     void setText(const QString &text);
+    void setTextFocus();
     void sendPress();
     void sendRelease();
     void sendClick();

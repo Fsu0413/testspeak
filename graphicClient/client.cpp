@@ -53,7 +53,6 @@ void Client::disconnectFromHost()
 void Client::notifiedHeartBeat(const QJsonObject &contents)
 {
     (void)contents;
-    qDebug() << "heartbeat";
 }
 
 void Client::notifiedSignedIn(const QJsonObject &contents)

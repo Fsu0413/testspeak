@@ -3307,6 +3307,29 @@ fail:
 }
 
 
+static int _wrap_Ai_setTextFocus(lua_State* L) {
+  int SWIG_arg = 0;
+  Ai *arg1 = (Ai *) 0 ;
+  
+  SWIG_check_num_args("Ai::setTextFocus",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Ai::setTextFocus",1,"Ai *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Ai,0))){
+    SWIG_fail_ptr("Ai_setTextFocus",1,SWIGTYPE_p_Ai);
+  }
+  
+  (arg1)->setTextFocus();
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static int _wrap_Ai_setText(lua_State* L) {
   int SWIG_arg = 0;
   Ai *arg1 = (Ai *) 0 ;
@@ -3432,6 +3455,7 @@ static swig_lua_method swig_Ai_methods[]= {
     { "onlinePlayers", _wrap_Ai_onlinePlayers},
     { "getNewestSpokenMessage", _wrap_Ai_getNewestSpokenMessage},
     { "setNameCombo", _wrap_Ai_setNameCombo},
+    { "setTextFocus", _wrap_Ai_setTextFocus},
     { "setText", _wrap_Ai_setText},
     { "sendPress", _wrap_Ai_sendPress},
     { "sendRelease", _wrap_Ai_sendRelease},

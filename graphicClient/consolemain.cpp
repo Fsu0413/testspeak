@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 #ifdef Q_OS_ANDROID
     QDir::setCurrent(QStringLiteral("/sdcard/graphicClient/"));
 #else
-    //QDir::setCurrent(a.applicationDirPath());
+    QDir::setCurrent(a.applicationDirPath());
 #endif
 
     Dialog w;

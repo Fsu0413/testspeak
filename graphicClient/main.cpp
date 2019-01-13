@@ -7,7 +7,6 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    qDebug() << QStyleFactory::keys();
     a.setStyle(QStringLiteral("Fusion"));
 #ifdef Q_OS_ANDROID
     QDir::setCurrent(QStringLiteral("/sdcard/graphicClient/"));

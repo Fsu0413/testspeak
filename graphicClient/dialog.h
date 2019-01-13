@@ -2,6 +2,7 @@
 #define DIALOG_H
 
 #include <QJsonObject>
+#include <QLineEdit>
 #include <QMap>
 #include <QString>
 #include <QWidget>
@@ -9,7 +10,6 @@
 class QCloseEvent;
 class QListWidget;
 class QListWidgetItem;
-class QLineEdit;
 class QPushButton;
 class Client;
 class QThread;
@@ -44,6 +44,21 @@ enum PlayerRole
     GenderRole,
 };
 
+class AutomatedLineEdit : public QLineEdit
+{
+    Q_OBJECT
+
+public:
+    void mousePressEvent(QMouseEvent *event) override
+    {
+        QLineEdit::mousePressEvent(event);
+    }
+    void mouseReleaseEvent(QMouseEvent *event) override
+    {
+        QLineEdit::mouseReleaseEvent(event);
+    }
+};
+
 class Dialog : public QWidget
 {
     Q_OBJECT
@@ -54,7 +69,7 @@ public:
 
     QListWidget *listWidget;
     QListWidget *userNames;
-    QLineEdit *edit;
+    AutomatedLineEdit *edit;
     QPushButton *sendbtn;
 
     Client *client;
@@ -75,6 +90,7 @@ public slots:
     // queued connection
     void setNameCombo(const QString &name);
     void setText(const QString &text);
+    void setTextFocus();
     void sendPress();
     void sendRelease();
     void sendClick();

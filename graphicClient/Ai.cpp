@@ -131,9 +131,9 @@ QString Ai::removeFirstChar(const QString &c)
     return c.mid(1);
 }
 
-void Ai::debugOutput(const QString &c)
+void Ai::debugOutput(const QString &)
 {
-    qDebug() << c;
+    // qDebug() << c;
 }
 
 QStringList Ai::newMessagePlayers()
@@ -241,6 +241,7 @@ void Ai::start()
 
     connect(this, &Ai::setNameCombo, dialog, &Dialog::setNameCombo, Qt::QueuedConnection);
     connect(this, &Ai::setText, dialog, &Dialog::setText, Qt::QueuedConnection);
+    connect(this, &Ai::setTextFocus, dialog, &Dialog::setTextFocus, Qt::QueuedConnection);
     connect(this, &Ai::sendPress, dialog, &Dialog::sendPress, Qt::QueuedConnection);
     connect(this, &Ai::sendRelease, dialog, &Dialog::sendRelease, Qt::QueuedConnection);
     connect(this, &Ai::sendClick, dialog, &Dialog::sendClick, Qt::QueuedConnection);

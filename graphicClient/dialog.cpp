@@ -54,7 +54,7 @@ void readConfig()
 QString generateConfigString()
 {
     QString str;
-    static const QStringList l{QStringLiteral("userName"), QStringLiteral("name"), QStringLiteral("gender")};
+    static const QStringList l {QStringLiteral("userName"), QStringLiteral("name"), QStringLiteral("gender")};
 
     foreach (const QString &i, l) {
         if (currentTlset.contains(i))
@@ -88,9 +88,9 @@ Dialog::Dialog(QWidget *parent)
     sendbtn = new QPushButton(QStringLiteral("send"));
     connect(sendbtn, &QPushButton::clicked, this, &Dialog::send);
 
-    edit = new QLineEdit;
+    edit = new AutomatedLineEdit;
     edit->clear();
-    connect(edit, &QLineEdit::returnPressed, [this]() -> void { sendbtn->animateClick(); });
+    connect(edit, &AutomatedLineEdit::returnPressed, [this]() -> void { sendbtn->animateClick(); });
 
     QHBoxLayout *hlayout = new QHBoxLayout;
     hlayout->addWidget(edit);
@@ -136,10 +136,9 @@ Dialog::Dialog(QWidget *parent)
 
 Dialog::~Dialog()
 {
-    while (!aiThread->isFinished()) {
-        qDebug() << "wait";
+    while (!aiThread->isFinished())
         aiThread->wait(1000);
-    }
+
 
     qDeleteAll(speakMap);
 }
@@ -253,6 +252,15 @@ void Dialog::setText(const QString &text)
     edit->deselect();
     edit->setText(text);
     edit->setCursorPosition(text.length());
+}
+
+void Dialog::setTextFocus()
+{
+    edit->setFocus();
+    QMouseEvent pe(QEvent::MouseButtonPress, QPointF(0., 0.), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    edit->mousePressEvent(&pe);
+    QMouseEvent re(QEvent::MouseButtonRelease, QPointF(0., 0.), Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
+    edit->mouseReleaseEvent(&re);
 }
 
 void Dialog::sendPress()
