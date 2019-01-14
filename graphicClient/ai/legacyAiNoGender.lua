@@ -30,7 +30,7 @@ data = {
 
 consts = {
 	["findPersonTimerId"] = AiCommon.UserTimerId + 1,
-	["findPersonTimeout"] = 200000,
+	["findPersonTimeout"] = 600000,
 	["timeoutTimerId"] = AiCommon.UserTimerId + 2,
 	["timeoutTimeout"] = 300000,
 	["operationTimerId"] = AiCommon.UserTimerId + 3,
