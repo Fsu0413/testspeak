@@ -181,7 +181,11 @@ sendingstep = function()
 			data.typed = ""
 			me:setTextFocus()
 			data.sendingStep = 3
-			timer = AiCommon.TimerConsts.thinkDelay
+			if data.currentViewing.contentIsFromTl then
+				timer = AiCommon.TimerConsts.thinkDelay
+			else
+				timer = AiCommon.TimerConsts.sendDelay
+			end
 		end
 	end
 
@@ -204,16 +208,18 @@ cancelAllPendingSend = function(to)
 	end
 end
 
-sendTo = function(to, content)
+sendTo = function(to, content, isFromTl)
 	if not to then to = "all" end
 	me:debugOutput("sendTo".. to .. content)
 
 	if (data.currentViewing.name == to) and (data.sendingStep == 102) and (not data.currentViewing.cancel) then
 		data.currentViewing.content = content
+		data.currentViewing.contentIsFromTl = isFromTl
 	else
 		local x = {
 			["name"] = to,
 			["content"] = content,
+			["contentIsFromTl"] = isFromTl,
 		}
 		table.insert(data.toview, x)
 	end
@@ -227,16 +233,16 @@ end
 findPerson = function()
 	me:debugOutput("findPerson")
 	if (data.speakingTo == "") and (not data.outoftime) then
-		sendTo(nil, getStringFromBase("findperson" .. me:gender()))
+		sendTo(nil, getStringFromBase("findperson" .. me:gender()), false)
 	end
 	me:addTimer(consts.findPersonTimerId, AiCommon.generateRandom(consts.findPersonTimeout))
 end
 
-send = function(content)
-	me:debugOutput("send" .. content)
+send = function(content, isFromTl)
+	me:debugOutput(tostring(isFromTl) .. "send" .. content)
 	if data.speakingTo ~= "" then
 		data.lastSent = content
-		sendTo(data.speakingTo, content)
+		sendTo(data.speakingTo, content, isFromTl)
 		if not data.outoftime then
 			me:addTimer(consts.timeoutTimerId, AiCommon.generateRandom(consts.timeoutTimeout))
 		end
@@ -245,7 +251,7 @@ end
 
 analyzeContent = function()
 	if data.lastRecv == data.lastSent then
-		send(getStringFromBase("parrotdup"))
+		send(getStringFromBase("parrotdup"), false)
 		return
 	end
 	me:debugOutput("data.queryTl" .. data.speakingTo .. data.lastRecv)
@@ -264,7 +270,7 @@ talk = function(content)
 	end
 
 	if content == data.lastRecv then
-		send(getStringFromBase("recvdup"))
+		send(getStringFromBase("recvdup"), false)
 		data.repeatTime = data.repeatTime + 1
 		if data.repeatTime == 5 then
 			table.insert(data.banned, data.speakingTo)
@@ -370,7 +376,7 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtim
 			if (me:gender() ~= obgender) then
 				local sending = getStringFromBase("greet")
 				sending = string.gsub(sending, "__AIREPLACE__", me:name())
-				sendTo(from, sending)
+				sendTo(from, sending, false)
 				return from
 			end
 		end
@@ -383,7 +389,7 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtim
 				local r = talk(content)
 				return from, r
 			else
-				sendTo(from, getStringFromBase("g" .. me:gender()))
+				sendTo(from, getStringFromBase("g" .. me:gender()), false)
 				return from
 			end
 		elseif from == data.speakingTo then
@@ -413,13 +419,15 @@ end
 
 tlReceive = function(value, sending, from)
 local tlReceive1 = function(value, sending, from)
+	local isFromTl = false
 	me:debugOutput("tlReceive" .. value .. sending)
 	local toSend = ""
 	if (value == 100000) or (value == 40002) then
 		toSend = sending
-		toSend = string.gsub(toSend, "%s+", " ")
 		if toSend == data.lastSent then
 			toSend = getStringFromBase("senddup")
+		else
+			isFromTl = true
 		end
 	elseif value == 40004 then
 		toSend = getStringFromBase("outoftime")
@@ -443,11 +451,11 @@ local tlReceive1 = function(value, sending, from)
 		toSend = getStringFromBase("change")
 	end
 
-	return toSend
+	return toSend, isFromTl
 end
-	local toSend = tlReceive1(value, sending, from)
+	local toSend, isFromTl = tlReceive1(value, sending, from)
 	if toSend then
-		send(toSend)
+		send(toSend, isFromTl)
 	elseif (data.sendingStep == 102) and (data.currentViewing.name == from) and (not data.currentViewing.cancel) then
 		data.currentViewing.cancel = true
 	end
@@ -460,7 +468,7 @@ timeout = function(timerid)
 	elseif timerid == consts.timeoutTimerId then
 		data.timeoutTime = data.timeoutTime + 1
 		local sending = getStringFromBase("timeout" .. tostring(data.timeoutTime))
-		send(sending)
+		send(sending, false)
 
 		if data.timeoutTime >= 3 then
 			data.speakingTo = ""
@@ -487,7 +495,7 @@ timeout = function(timerid)
 			data.outoftimeDay = 0
 			data.outoftimeKnown = {}
 			if data.speakingTo ~= "" then
-				send(getStringFromBase("revive"))
+				send(getStringFromBase("revive"), false)
 			end
 		else
 			me:addTimer(consts.outoftimeTimerId, AiCommon.TimerConsts.outoftimeTimeout)
@@ -498,5 +506,6 @@ timeout = function(timerid)
 end
 
 math.randomseed(os.time())
-me:addTimer(consts.findPersonTimerId, 2000)
 me:addTimer(consts.operationTimerId, 100)
+
+findPerson()

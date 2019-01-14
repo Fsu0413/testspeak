@@ -88,7 +88,19 @@ Dialog::Dialog(QObject *parent)
     sendBtn = new ConsoleButton(this);
     connect(sendBtn, &ConsoleButton::clicked, this, &Dialog::send);
 
+    Ai *ai = new Ai(this);
+    aiThread = new QThread(this);
+    ai->moveToThread(aiThread);
+    connect(aiThread, &QThread::finished, ai, &Ai::deleteLater);
+    connect(aiThread, &QThread::started, ai, &Ai::start, Qt::QueuedConnection);
+
     client = new Client(this);
+
+    connect(client, &Client::addPlayer, this, &Dialog::addPlayer);
+    connect(client, &Client::removePlayer, this, &Dialog::removePlayer);
+    connect(client, &Client::playerDetail, this, &Dialog::playerDetail);
+    connect(client, &Client::playerSpoken, this, &Dialog::playerSpoken);
+    connect(client, &Client::signedIn, aiThread, &QThread::start);
 
     if (config.contains(QStringLiteral("serverHost"))) {
         QString host = config.value(QStringLiteral("serverHost")).toString();
@@ -98,18 +110,6 @@ Dialog::Dialog(QObject *parent)
 
         client->connectToHost(host, port);
     }
-
-    connect(client, &Client::addPlayer, this, &Dialog::addPlayer);
-    connect(client, &Client::removePlayer, this, &Dialog::removePlayer);
-    connect(client, &Client::playerDetail, this, &Dialog::playerDetail);
-    connect(client, &Client::playerSpoken, this, &Dialog::playerSpoken);
-
-    Ai *ai = new Ai(this);
-    aiThread = new QThread(this);
-    ai->moveToThread(aiThread);
-    connect(aiThread, &QThread::finished, ai, &Ai::deleteLater);
-    connect(aiThread, &QThread::started, ai, &Ai::start);
-    aiThread->start();
 }
 
 Dialog::~Dialog()

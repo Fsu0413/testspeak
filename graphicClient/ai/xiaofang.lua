@@ -157,7 +157,11 @@ sendingstep = function()
 			data.typed = ""
 			me:setTextFocus()
 			data.sendingStep = 3
-			timer = AiCommon.TimerConsts.thinkDelay
+			if data.currentViewing.contentIsFromTl then
+				timer = AiCommon.TimerConsts.thinkDelay
+			else
+				timer = AiCommon.TimerConsts.sendDelay
+			end
 		end
 	end
 
@@ -180,34 +184,37 @@ cancelAllPendingSend = function(to)
 	end
 end
 
-sendTo = function(to, content)
+sendTo = function(to, content, isFromTl)
 	if not to then to = "all" end
 	me:debugOutput("sendTo".. to .. content)
 
 	if (data.currentViewing.name == to) and (data.sendingStep == 102) and (not data.currentViewing.cancel) then
 		data.currentViewing.content = content
+		data.currentViewing.contentIsFromTl = isFromTl
 	else
 		local x = {
 			["name"] = to,
 			["content"] = content,
+			["contentIsFromTl"] = isFromTl,
 		}
 		table.insert(data.toview, x)
 	end
 end
+
 getStringFromBase = function(baseName)
 	me:debugOutput("getStringFromBase" .. baseName)
 	return base[baseName][math.random(1, #(base[baseName]))];
 end
 
-send = function(from, content)
-	me:debugOutput("send" .. from .. content)
+send = function(from, content, isFromTl)
+	me:debugOutput(tostring(isFromTl) .. "send" .. from .. content)
 	data.lastSent[from] = content
-	sendTo(from, content)
+	sendTo(from, content, isFromTl)
 end
 
 analyzeContent = function(from)
 	if data.recvList[from][#(data.recvList[from])] == data.lastSent[from] then
-		send(from, getStringFromBase("parrotdup"))
+		send(from, getStringFromBase("parrotdup"), false)
 		return
 	end
 	me:debugOutput("data.queryTl" .. from .. data.recvList[from][#(data.recvList[from])])
@@ -311,7 +318,7 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtim
 
 	if groupsent then
 		if string.find(content, me:name()) then
-			send(from, getStringFromBase("callme"))
+			send(from, getStringFromBase("callme"), false)
 			return from
 		else
 			local boring = false
@@ -325,7 +332,7 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtim
 			if boring then
 				local sending = getStringFromBase("greet" .. me:gender())
 				sending = string.gsub(sending, "__AIREPLACE__", me:name())
-				send(from, sending)
+				send(from, sending, false)
 				return from
 			end
 		end
@@ -353,13 +360,15 @@ end
 
 tlReceive = function(value, sending, from)
 local tlReceive1 = function(value, sending, from)
+	local isFromTl = false
 	me:debugOutput("tlReceive" .. value .. sending)
 	local toSend = ""
 	if (value == 100000) or (value == 40002) then
 		toSend = sending
-		toSend = string.gsub(toSend, "%s+", " ")
 		if toSend == data.lastSent[from] then
 			toSend = getStringFromBase("senddup")
+		else
+			isFromTl = true
 		end
 	elseif value == 40004 then
 		toSend = getStringFromBase("outoftime")
@@ -382,11 +391,11 @@ local tlReceive1 = function(value, sending, from)
 	if (toSend == "") then
 		toSend = getStringFromBase("change" .. me:gender())
 	end
-	return toSend
+	return toSend, isFromTl
 end
-	local toSend = tlReceive1(value, sending, from)
+	local toSend, isFromTl = tlReceive1(value, sending, from)
 	if toSend then
-		send(from, toSend)
+		send(from, toSend, isFromTl)
 	elseif (data.sendingStep == 102) and (data.currentViewing.name == from) and (not data.currentViewing.cancel) then
 		data.currentViewing.cancel = true
 	end

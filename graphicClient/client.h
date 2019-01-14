@@ -62,6 +62,8 @@ signals:
     void removePlayer(QString name);
     void playerDetail(QJsonObject ob);
     void playerSpoken(QString from, QString to, QString content, bool fromYou, bool toYou, bool groupsent, quint32 time);
+
+    void signedIn();
 };
 
 #endif

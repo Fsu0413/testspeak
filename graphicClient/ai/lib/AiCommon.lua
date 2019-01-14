@@ -139,7 +139,7 @@ end
 AiCommon.generateRandom = function(rand)
 	local randBase = math.min(rand, 10000)
 	local randFixed = rand - randBase
-	return randFixed + math.random(randBase * 0.3, randBase * 1.5)
+	return randFixed + math.random(randBase * 0.8, randBase * 1.1)
 end
 
 me:addTimer(consts.GetNewestInfoTimerId, consts.GetNewestInfoTimeout)

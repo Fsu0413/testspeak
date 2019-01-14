@@ -122,6 +122,8 @@ void Client::signIn()
     heartbeatTimer->setSingleShot(false);
     connect(heartbeatTimer, &QTimer::timeout, this, &Client::sendHeartBeat);
     heartbeatTimer->start();
+
+    emit signedIn();
 }
 
 void Client::socketReadyRead()

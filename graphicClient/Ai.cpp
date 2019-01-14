@@ -205,7 +205,7 @@ void Ai::receive()
     QJsonObject ob = doc.object();
     int value = ob.value(QStringLiteral("code")).toInt();
     QString sending = ob.value(QStringLiteral("text")).toString();
-    sending.replace(QRegExp(QStringLiteral("\\s")), QString());
+    sending.replace(QRegExp(QStringLiteral("\\s+")), QStringLiteral(" "));
 
     lua_getglobal(l, "tlReceive");
     lua_pushinteger(l, value);
