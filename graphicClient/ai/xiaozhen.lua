@@ -59,10 +59,6 @@ base = {
 	},
 }
 
-generateRandom = function(rand)
-	return math.random(rand * 0.3, rand * 1.5)
-end
-
 sendingstep = function()
 	local timer = 100
 
@@ -150,7 +146,7 @@ sendingstep = function()
 		end
 	end
 
-	timer = generateRandom(timer)
+	timer = AiCommon.generateRandom(timer)
 
 	me:addTimer(consts.operationTimerId, timer)
 end
@@ -333,7 +329,7 @@ local tlReceive1 = function(value, sending, from)
 	local toSend = ""
 	if (value == 100000) or (value == 40002) then
 		toSend = sending
-		toSend = string.gsub(toSend, "%s", "")
+		toSend = string.gsub(toSend, "%s+", " ")
 		if toSend == data.lastSent[from] then
 			toSend = getStringFromBase("senddup")
 		end

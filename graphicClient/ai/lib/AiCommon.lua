@@ -6,10 +6,10 @@ AiCommon.Callbacks = {}
 
 AiCommon.TimerConsts = {
 	["outoftimeTimeout"] = 1000,
-	["thinkDelay"] = 5000,
-	["clickDelay"] = 200,
-	["typeDelay"] = 100,
-	["sendDelay"] = 1500,
+	["thinkDelay"] = 40000,
+	["clickDelay"] = 400,
+	["typeDelay"] = 500,
+	["sendDelay"] = 5000,
 }
 
 local data = {
@@ -129,12 +129,17 @@ local getNewestInfo = function()
 	data.newestMessage = newestSpokenMesage
 end
 
-
 AiCommon.timeout = function(timerId)
 	if timerId == consts.GetNewestInfoTimerId then
 		getNewestInfo()
 		me:addTimer(consts.GetNewestInfoTimerId, consts.GetNewestInfoTimeout)
 	end
+end
+
+AiCommon.generateRandom = function(rand)
+	local randBase = math.min(rand, 10000)
+	local randFixed = rand - randBase
+	return randFixed + math.random(randBase * 0.3, randBase * 1.5)
 end
 
 me:addTimer(consts.GetNewestInfoTimerId, consts.GetNewestInfoTimeout)

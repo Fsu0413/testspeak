@@ -94,10 +94,6 @@ base = {
 	},
 }
 
-generateRandom = function(rand)
-	return math.random(rand * 0.3, rand * 1.5)
-end
-
 sendingstep = function()
 	local timer = 100
 
@@ -185,7 +181,7 @@ sendingstep = function()
 		end
 	end
 
-	timer = generateRandom(timer)
+	timer = AiCommon.generateRandom(timer)
 
 	me:addTimer(consts.operationTimerId, timer)
 end
@@ -229,7 +225,7 @@ findPerson = function()
 	if (data.speakingTo == "") and (not data.outoftime) then
 		sendTo(nil, getStringFromBase("findperson"))
 	end
-	me:addTimer(consts.findPersonTimerId, generateRandom(consts.findPersonTimeout))
+	me:addTimer(consts.findPersonTimerId, AiCommon.generateRandom(consts.findPersonTimeout))
 end
 
 send = function(content)
@@ -238,7 +234,7 @@ send = function(content)
 		data.lastSent = content
 		sendTo(data.speakingTo, content)
 		if not data.outoftime then
-			me:addTimer(consts.timeoutTimerId, generateRandom(consts.timeoutTimeout))
+			me:addTimer(consts.timeoutTimerId, AiCommon.generateRandom(consts.timeoutTimeout))
 		end
 	end
 end
@@ -408,7 +404,7 @@ local tlReceive1 = function(value, sending, from)
 	local toSend = ""
 	if (value == 100000) or (value == 40002) then
 		toSend = sending
-		toSend = string.gsub(toSend, "%s", "")
+		toSend = string.gsub(toSend, "%s+", " ")
 		if toSend == data.lastSent then
 			toSend = getStringFromBase("senddup")
 		end
