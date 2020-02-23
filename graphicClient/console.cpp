@@ -12,22 +12,6 @@
 #include <QMutex>
 #include <QThread>
 
-class ConsoleButton : public QObject
-{
-    Q_OBJECT
-
-public:
-    ConsoleButton(QObject *parent);
-
-signals:
-    void clicked();
-};
-
-ConsoleButton::ConsoleButton(QObject *parent)
-    : QObject(parent)
-{
-}
-
 QVariantMap config;
 QVariantMap currentTlset;
 
@@ -85,9 +69,6 @@ Dialog::Dialog(QObject *parent)
     detail->hasUnreadMessage = false;
     playerMap[QStringLiteral("all")] = detail;
 
-    sendBtn = new ConsoleButton(this);
-    connect(sendBtn, &ConsoleButton::clicked, this, &Dialog::send);
-
     Ai *ai = new Ai(this);
     aiThread = new QThread(this);
     ai->moveToThread(aiThread);
@@ -100,7 +81,7 @@ Dialog::Dialog(QObject *parent)
     connect(client, &Client::removePlayer, this, &Dialog::removePlayer);
     connect(client, &Client::playerDetail, this, &Dialog::playerDetail);
     connect(client, &Client::playerSpoken, this, &Dialog::playerSpoken);
-    connect(client, &Client::signedIn, aiThread, &QThread::start);
+    connect(client, &Client::signedIn, [this]() { aiThread->start(); });
 
     if (config.contains(QStringLiteral("serverHost"))) {
         QString host = config.value(QStringLiteral("serverHost")).toString();
@@ -233,7 +214,7 @@ void Dialog::sendClick()
 {
     QString dbg = QStringLiteral("Send: %1: %2").arg(speakTo).arg(edit);
     qDebug() << dbg;
-    emit sendBtn->clicked();
+    send();
 }
 
 void Dialog::refreshPlayerList()
@@ -276,5 +257,3 @@ void Dialog::refreshMessageList()
     (void)locker;
     AiData[QStringLiteral("message")] = message;
 }
-
-#include "console.moc"

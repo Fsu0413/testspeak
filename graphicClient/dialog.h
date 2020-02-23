@@ -2,17 +2,24 @@
 #define DIALOG_H
 
 #include <QJsonObject>
-#include <QLineEdit>
 #include <QMap>
+#include <QObject>
 #include <QString>
-#include <QWidget>
 
+#ifdef GRAPHICSCLIENT
+#include <QLineEdit>
+#include <QWidget>
+#endif
+
+class Client;
+class QThread;
+
+#ifdef GRAPHICSCLIENT
 class QCloseEvent;
 class QListWidget;
 class QListWidgetItem;
 class QPushButton;
-class Client;
-class QThread;
+#endif
 
 struct SpeakDetail
 {
@@ -44,6 +51,7 @@ enum PlayerRole
     GenderRole,
 };
 
+#ifdef GRAPHICSCLIENT
 class AutomatedLineEdit : public QLineEdit
 {
     Q_OBJECT
@@ -58,24 +66,51 @@ public:
         QLineEdit::mouseReleaseEvent(event);
     }
 };
+#else
 
-class Dialog : public QWidget
+struct PlayerDetail
+{
+    QString name;
+    QString gender;
+    bool hasUnreadMessage;
+};
+
+#endif
+
+class Dialog
+#ifdef GRAPHICSCLIENT
+    : public QWidget
+#else
+    : public QObject
+#endif
 {
     Q_OBJECT
 
 public:
+#ifdef GRAPHICSCLIENT
     Dialog(QWidget *parent = nullptr);
+#else
+    Dialog(QObject *parent = nullptr);
+#endif
     ~Dialog();
-
-    QListWidget *listWidget;
-    QListWidget *userNames;
-    AutomatedLineEdit *edit;
-    QPushButton *sendbtn;
 
     Client *client;
     QThread *aiThread;
 
     QMap<QString, QList<SpeakDetail> *> speakMap;
+
+#ifdef GRAPHICSCLIENT
+    QListWidget *listWidget;
+    QListWidget *userNames;
+    AutomatedLineEdit *edit;
+    QPushButton *sendbtn;
+
+#else
+    QMap<QString, PlayerDetail *> playerMap;
+
+    QString speakTo;
+    QString edit;
+#endif
 
 public slots:
     void addPlayer(QString name, QString gender);
@@ -84,8 +119,6 @@ public slots:
     void playerSpoken(QString from, QString to, QString content, bool fromYou, bool toYou, bool groupsent, quint32 time);
 
     void send();
-
-    void userNameChanged(QListWidgetItem *current, QListWidgetItem *previous);
 
     // queued connection
     void setNameCombo(const QString &name);
@@ -99,9 +132,17 @@ public slots:
     void refreshPlayerList();
     void refreshMessageList();
 
+    void userNameChanged(
+#ifdef GRAPHICSCLIENT
+        QListWidgetItem *current, QListWidgetItem *previous
+#endif
+    );
+
+#ifdef GRAPHICSCLIENT
     // QWidget interface
 protected:
     void closeEvent(QCloseEvent *event) override;
+#endif
 
 private:
     void updateList();

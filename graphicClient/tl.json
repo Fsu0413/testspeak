@@ -11,7 +11,7 @@
 	{
 		"name": "老游",
 		"key": "54be9b174cc94399888b733d9be80b29",
-		"gender": "male",
+		"gender": "female",
 		"aiFile": "ai/legacyAiNoGender.lua",
 		"userName": "swim7",
 		"comments": "游戏 游戏互动",
@@ -38,7 +38,7 @@
 	{
 		"name": "老宠",
 		"key": "ca88be80b7bb4f95bec6f3f09dd0589c",
-		"gender": "male",
+		"gender": "female",
 		"aiFile": "ai/xiaozhen.lua",
 		"userName": "TheBigPetty",
 		"comments": "社交社群 虚拟宠物",
@@ -48,7 +48,7 @@
 		"name": "老裴",
 		"key": "38ac146d6603450ba28afa375a8041ad",
 		"aiFile": "ai/legacyAi.lua",
-		"gender": "male",
+		"gender": "female",
 		"userName": "peithebeset",
 		"comments": "社交社群 虚拟陪聊",
 		"age": 29

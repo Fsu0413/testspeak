@@ -46,8 +46,6 @@ struct PlayerDetail
     bool hasUnreadMessage;
 };
 
-class ConsoleButton;
-
 class Dialog : public QObject
 {
     Q_OBJECT
@@ -64,7 +62,6 @@ public:
 
     QString speakTo;
     QString edit;
-    ConsoleButton *sendBtn;
 
 public slots:
     void addPlayer(QString name, QString gender);

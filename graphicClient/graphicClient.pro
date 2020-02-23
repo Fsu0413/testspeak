@@ -4,18 +4,18 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network widgets
+QT       += core network
 
-
-TARGET = graphicClient
 TEMPLATE = app
 CONFIG -= app_bundle
+
+CONFIG += graphicsclient
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
-DEFINES += QT_DEPRECATED_WARNINGS _CRT_SECURE_NO_WARNINGS QT_NO_CAST_FROM_ASCII GRAPHICSCLIENT
+DEFINES += QT_DEPRECATED_WARNINGS _CRT_SECURE_NO_WARNINGS QT_NO_CAST_FROM_ASCII
 
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -25,7 +25,7 @@ DEFINES += QT_DEPRECATED_WARNINGS _CRT_SECURE_NO_WARNINGS QT_NO_CAST_FROM_ASCII 
 
 SOURCES += \
         main.cpp \
-        dialog.cpp client.cpp \
+        client.cpp \
     lua/lapi.c \
     lua/lauxlib.c \
     lua/lbaselib.c \
@@ -89,15 +89,28 @@ HEADERS += \
     lua/lzio.h \
     Ai.h
 
+CONFIG(graphicsclient) {
+    QT += gui widgets
+    DEFINES += GRAPHICSCLIENT
+    SOURCES += dialog.cpp
+    TARGET = graphicClient
+} else {
+    CONFIG += console
+    QT -= gui widgets
+    DEFINES += CONSOLECLIENT
+    SOURCES += console.cpp
+    TARGET = consoleClient
+}
+
 INCLUDEPATH += $$_PRO_FILE_PWD_/lua
 
 linux {
-	android {
-		DEFINES += "\"getlocaledecpoint()='.'\"" LUA_USE_POSIX
-	} else {
-		DEFINES += LUA_USE_LINUX
-		LIBS += -ldl -lreadline
-	}
+    android {
+        DEFINES += "\"getlocaledecpoint()='.'\"" LUA_USE_POSIX
+    } else {
+        DEFINES += LUA_USE_LINUX
+        LIBS += -ldl -lreadline
+    }
 }
 
 macos {

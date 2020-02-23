@@ -4,6 +4,7 @@
 #include "lua.hpp"
 
 #include <QCoreApplication>
+#include <QDebug>
 #include <QDir>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -74,8 +75,9 @@ QString Ai::getPlayerGender(const QString &name)
     return playerDetail.value(QStringLiteral("gender")).toString();
 }
 
-void Ai::queryTl(const QString &id, const QString &content, const QString &_key, const QString &aiComment)
+bool Ai::queryTl(const QString &id, const QString &content, const QString &_key, const QString &aiComment)
 {
+#ifdef TULING
     QJsonObject ob;
 
     QString key = _key;
@@ -95,6 +97,22 @@ void Ai::queryTl(const QString &id, const QString &content, const QString &_key,
     reply->setProperty("from", id);
     reply->setProperty("aiComment", aiComment);
     connect(reply, &QNetworkReply::finished, this, &Ai::receive);
+
+    return true;
+#else
+    QString reqStr = QStringLiteral("http://api.qingyunke.com/api.php?key=free&appid=0&msg=") + content;
+    QUrl url = QUrl::fromUserInput(reqStr);
+    if (!url.isValid())
+        return false;
+
+    QNetworkRequest req(url);
+    QNetworkReply *reply = nam1->get(req);
+    reply->setProperty("from", id);
+    reply->setProperty("aiComment", aiComment);
+    connect(reply, &QNetworkReply::finished, this, &Ai::receive);
+
+    return true;
+#endif
 }
 
 void Ai::addTimer(int timerId, int timeOut)
@@ -203,9 +221,21 @@ void Ai::receive()
 
     QJsonDocument doc = QJsonDocument::fromJson(arr);
     QJsonObject ob = doc.object();
+
+#ifdef TULING
     int value = ob.value(QStringLiteral("code")).toInt();
     QString sending = ob.value(QStringLiteral("text")).toString();
     sending.replace(QRegExp(QStringLiteral("\\s+")), QStringLiteral(" "));
+#else
+    int value = ob.value(QStringLiteral("result")).toInt();
+    if (value == 0)
+        value = 100000;
+    else
+        value = 40001;
+
+    QString sending = ob.value(QStringLiteral("content")).toString();
+    sending.replace(QStringLiteral("{br}"), QStringLiteral(" "));
+#endif
 
     lua_getglobal(l, "tlReceive");
     lua_pushinteger(l, value);
