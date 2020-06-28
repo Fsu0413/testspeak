@@ -137,7 +137,7 @@ void Client::signIn()
 
 void Client::lostConnection()
 {
-    if (socket != nullptr) {
+    if (socket != nullptr && !signedOff) {
         QHostAddress addr = socket->peerAddress();
         quint16 port = socket->peerPort();
 
