@@ -4,6 +4,7 @@ local AiCommon = require("AiCommon")
 data = {
 	["repeatTime"] = 0,
 	["banned"] = {},
+	["samegendertimes"] = {},
 
 	["speakingTo"] = "",
 	["groupSpoken"] = {},
@@ -64,10 +65,22 @@ base = {
 		"复读机，鉴定完毕。"
 	},
 	["gmale"] = {
-		"我现在只对女生感性趣，这段时间不要找我了好么"
+		"我现在只对女生感性趣，这段时间不要找我了好么，多谢"
+	},
+	["g2male"] = {
+		"都说了不要找我了就不要找我了，好烦"
+	},
+	["g3male"] = {
+		"滚"
 	},
 	["gfemale"] = {
 		"美女请问您可以做我的小哥哥么~"
+	},
+	["g2female"] = {
+		"美女您把性别改一下嘛~至少让我认为我在跟小哥哥说话嘛~"
+	},
+	["g3female"] = {
+		"嘤嘤嘤，就这么不配合嘛T_T不跟你好了，哼"
 	},
 	["findpersonmale"] = {
 		"有没有人，能陪我尬聊十块钱的",
@@ -386,7 +399,19 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtim
 				local r = talk(content)
 				return from, r
 			else
-				sendTo(from, getStringFromBase("g" .. me:gender()), false)
+				if not data.samegendertimes[from] then
+					data.samegendertimes[from] = 0
+				end
+				
+				data.samegendertimes[from] = data.samegendertimes[from] + 1
+				if data.samegendertimes[from] <= 3 then
+					sendTo(from, getStringFromBase("g" .. me:gender()), false)
+				elseif data.samegendertimes[from] <= 5 then
+					sendTo(from, getStringFromBase["g2" .. me:gender()), false)
+				else
+					table.insert(data.banned, from)
+					sendTo(from, getStringFromBase["g3" .. me:gender()), false)
+				end
 				return from
 			end
 		elseif from == data.speakingTo then
