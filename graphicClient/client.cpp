@@ -54,6 +54,10 @@ void Client::connectToHost(const QString &host, int port)
 
 void Client::disconnectFromHost()
 {
+    QJsonObject ob;
+    ob[QStringLiteral("protocolValue")] = int(SP_SignOut);
+    QJsonDocument doc(ob);
+    writeJsonDocument(doc);
     socket->disconnectFromHost();
 }
 

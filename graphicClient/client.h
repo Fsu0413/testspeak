@@ -14,6 +14,7 @@ enum ServerProtocol
     SP_SignIn,
     SP_Query,
     SP_Speak,
+    SP_SignOut,
 
     SP_Max,
 };
