@@ -1,6 +1,7 @@
 #include "client.h"
 #include <QByteArray>
 #include <QDebug>
+#include <QHostAddress>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -16,6 +17,7 @@ extern QVariantMap config;
 extern QVariantMap currentTlset;
 
 QString selfName;
+bool signedOff = false;
 
 // clang-format off
 const Client::ClientFunction Client::ClientFunctions[CP_Max] = {
@@ -48,12 +50,14 @@ void Client::connectToHost(const QString &host, int port)
     socket = new QTcpSocket(this);
     connect(socket, &QTcpSocket::connected, this, &Client::signIn);
     connect(socket, &QTcpSocket::readyRead, this, &Client::socketReadyRead);
+    connect(socket, &QTcpSocket::disconnected, this, &Client::lostConnection);
 
     socket->connectToHost(host, port);
 }
 
 void Client::disconnectFromHost()
 {
+    signedOff = true;
     QJsonObject ob;
     ob[QStringLiteral("protocolValue")] = int(SP_SignOut);
     QJsonDocument doc(ob);
@@ -129,6 +133,16 @@ void Client::signIn()
     heartbeatTimer->start();
 
     emit signedIn();
+}
+
+void Client::lostConnection()
+{
+    if (socket != nullptr) {
+        QHostAddress addr = socket->peerAddress();
+        quint16 port = socket->peerPort();
+
+        socket->connectToHost(addr, port);
+    }
 }
 
 void Client::socketReadyRead()

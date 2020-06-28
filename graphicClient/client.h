@@ -52,6 +52,7 @@ public:
 
 public slots:
     void signIn();
+    void lostConnection();
     void socketReadyRead();
     void queryPlayerDetail(QString name);
     void speak(QString to, QString content);
