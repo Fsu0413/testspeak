@@ -105,20 +105,17 @@ sendingstep = function()
 		end
 	elseif data.sendingStep == 5 then
 		if data.currentViewing.cancel then
-			data.currentViewing = {}
 			me:sendRelease()
-			data.sendingStep = 0
 			data.sending = ""
 			data.typed = ""
 			me:setText("")
-			timer = AiCommon.TimerConsts.sendDelay
 		else
 			me:sendClick()
-			data.sendpressed = false
-			data.sendingStep = 0
-			data.currentViewing = {}
-			timer = AiCommon.TimerConsts.sendDelay
 		end
+		data.sendpressed = false
+		data.sendingStep = 0
+		data.currentViewing = {}
+		timer = AiCommon.TimerConsts.sendDelay
 	elseif data.sendingStep == 101 then
 		data.sendingStep = 102
 		me:setNameCombo(data.currentViewing.name)
