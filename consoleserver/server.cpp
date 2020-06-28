@@ -9,6 +9,7 @@
 #include <QObject>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QTimer>
 
 enum ServerProtocol
 {
@@ -17,6 +18,7 @@ enum ServerProtocol
     SP_SignIn,
     SP_Query,
     SP_Speak,
+    SP_SignOut,
 
     SP_Max,
 };
@@ -33,26 +35,34 @@ enum ClientProtocol
     CP_Max,
 };
 
-inline void writeJsonDocument(QTcpSocket *socket, const QJsonDocument &doc)
-{
-    QByteArray arr = doc.toJson(QJsonDocument::Compact);
-    arr.append("\n");
-    socket->write(arr);
-    socket->flush();
-}
-
 class ServerImpl : public QObject
 {
     Q_OBJECT
 
 private:
     QTcpServer *server;
-    QMap<QTcpSocket *, QJsonObject> socketTlMap;
     QMap<QString, QTcpSocket *> nameSocketMap;
+    QMap<QString, QJsonObject> nameTlMap;
+    QMap<QString, QList<QJsonDocument>> disconnectCache;
+    QMap<QString, QTimer *> disconnectTimerMap;
 
     typedef void (ServerImpl::*ServerFunction)(QTcpSocket *socket, const QJsonObject &content);
 
     static const ServerFunction ServerFunctions[SP_Max];
+
+    inline void writeJsonDocument(const QString &name, const QJsonDocument &doc)
+    {
+        QTcpSocket *socket = nameSocketMap[name];
+        if (socket != nullptr) {
+            QByteArray arr = doc.toJson(QJsonDocument::Compact);
+            arr.append("\n");
+            socket->write(arr);
+            socket->flush();
+        } else {
+            (void)disconnectCache[name];
+            disconnectCache[name] << doc;
+        }
+    }
 
 public:
     ServerImpl()
@@ -67,32 +77,71 @@ public:
         server->listen(QHostAddress::Any, 40001);
     }
 
+    void doSignOut(const QString &name)
+    {
+        nameSocketMap.remove(name);
+        nameTlMap.remove(name);
+        disconnectCache.remove(name);
+        disconnectTimerMap.remove(name);
+
+        QJsonObject ob;
+        ob["protocolValue"] = int(CP_SignedOut);
+        ob["userName"] = name;
+
+        QJsonDocument doc(ob);
+
+        foreach (const QString &socket, nameSocketMap.keys())
+            writeJsonDocument(socket, doc);
+    }
+
 public:
     void signInFunc(QTcpSocket *socket, const QJsonObject &content)
     {
-        socketTlMap[socket] = content;
-        auto copy = content;
-        copy[QStringLiteral("protocolValue")] = int(CP_SignedIn);
-
-        QJsonDocument doc(copy);
-
-        foreach (QTcpSocket *to, nameSocketMap)
-            writeJsonDocument(to, doc);
-
         QString name = content.value("userName").toString();
-        nameSocketMap[name] = socket;
+        bool reconnect = false;
+        if (!disconnectTimerMap.contains(name)) {
+            auto copy = content;
+            copy[QStringLiteral("protocolValue")] = int(CP_SignedIn);
 
-        qDebug() << socket->peerAddress().toString() << "," << socket->peerPort() << "registered as" << name;
+            QJsonDocument doc(copy);
+
+            foreach (const QString &name, nameSocketMap.keys()) {
+                if (!disconnectTimerMap.contains(name))
+                    writeJsonDocument(name, doc);
+            }
+            qDebug() << socket->peerAddress().toString() << "," << socket->peerPort() << "registered as" << name;
+            nameTlMap[name] = content;
+        } else {
+            disconnectTimerMap[name]->stop();
+            disconnectTimerMap[name]->deleteLater();
+            disconnectTimerMap.remove(name);
+            qDebug() << socket->peerAddress().toString() << "," << socket->peerPort() << "reconnected as" << name;
+            reconnect = true;
+        }
+
+        nameSocketMap[name] = socket;
+        queryFunc(socket, QJsonObject());
+
+        if (reconnect && disconnectCache.contains(name)) {
+            foreach (const QJsonDocument &doc, disconnectCache[name])
+                writeJsonDocument(name, doc);
+
+            disconnectCache.remove(name);
+        }
     }
 
     void queryFunc(QTcpSocket *socket, const QJsonObject &content)
     {
         QJsonObject ret;
+        QString name = nameSocketMap.key(socket);
+        if (name.isEmpty())
+            return;
+
         if (!content.contains("userName")) {
             qDebug() << socket->peerAddress().toString() << "," << socket->peerPort() << "is querying all";
             QJsonArray arr;
             QJsonObject ob;
-            foreach (const QJsonObject &tl, socketTlMap) {
+            foreach (const QJsonObject &tl, nameTlMap) {
                 arr.append(tl.value("userName"));
                 ob[tl.value("userName").toString()] = tl;
             }
@@ -102,29 +151,29 @@ public:
         } else {
             QString name = content.value("userName").toString();
             qDebug() << socket->peerAddress().toString() << "," << socket->peerPort() << "is querying" << name;
-            if (nameSocketMap.contains(name)) {
-                QTcpSocket *socket = nameSocketMap.value(name);
-                ret = socketTlMap.value(socket);
-            }
+            if (nameTlMap.contains(name))
+                ret = nameTlMap.value(name);
         }
         ret[QStringLiteral("protocolValue")] = int(CP_QueryResult);
 
         QJsonDocument doc(ret);
-        writeJsonDocument(socket, doc);
+        writeJsonDocument(name, doc);
     }
 
     void speakFunc(QTcpSocket *socket, const QJsonObject &content)
     {
         qDebug() << socket->peerAddress().toString() << "," << socket->peerPort() << "is speaking";
 
-        QList<QTcpSocket *> tos = nameSocketMap.values();
+        //QList<QTcpSocket *> tos = nameSocketMap.values();
+        QStringList tos = nameSocketMap.keys();
 
         if (content.contains(QStringLiteral("to"))) {
             QString name = content.value("to").toString();
             qDebug() << "to" << name;
             if (nameSocketMap.contains(name)) {
                 tos.clear();
-                tos << socket << nameSocketMap[name];
+                //tos << socket << nameSocketMap[name];
+                tos << nameSocketMap.key(socket) << name;
             } else {
                 return;
             }
@@ -135,8 +184,23 @@ public:
         copy[QStringLiteral("time")] = qint64(QDateTime::currentDateTime().toTime_t());
 
         QJsonDocument doc(copy);
-        foreach (QTcpSocket *to, tos)
+        foreach (const QString &to, tos)
             writeJsonDocument(to, doc);
+    }
+
+    void signOutFunc(QTcpSocket *socket, const QJsonObject &content)
+    {
+        (void)content;
+        qDebug() << socket->peerAddress().toString() << "," << socket->peerPort() << "signed out.";
+        QString name = nameSocketMap.key(socket);
+        if (name.isEmpty())
+            return;
+
+        disconnect(socket);
+        socket->disconnectFromHost();
+        // socket->deleteLater();
+
+        doSignOut(name);
     }
 
     void heartbeatFunc(QTcpSocket *socket, const QJsonObject &content)
@@ -146,7 +210,7 @@ public:
         ob[QStringLiteral("protocolValue")] = int(CP_Zero);
 
         QJsonDocument doc(ob);
-        writeJsonDocument(socket, doc);
+        writeJsonDocument(nameSocketMap.key(socket), doc);
     }
 
 public slots:
@@ -188,23 +252,44 @@ public slots:
         QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
         if (socket != nullptr) {
             qDebug() << socket->peerAddress().toString() << "," << socket->peerPort() << "disconnected.";
-            QString name = socketTlMap[socket].value(QStringLiteral("userName")).toString();
-            socketTlMap.remove(socket);
-            nameSocketMap.remove(name);
+            QString name = nameSocketMap.key(socket);
+            if (name.isEmpty())
+                return;
 
-            QJsonObject ob;
-            ob["protocolValue"] = int(CP_SignedOut);
-            ob["userName"] = name;
+            nameSocketMap[name] = nullptr;
 
-            QJsonDocument doc(ob);
+            QTimer *t = new QTimer(this);
+            t->setInterval(180000);
+            t->setSingleShot(true);
+            connect(t, &QTimer::timeout, this, &ServerImpl::disconnectTimerTimeout);
 
-            foreach (QTcpSocket *socket, nameSocketMap)
-                writeJsonDocument(socket, doc);
+            disconnectTimerMap[name] = t;
+            t->start();
+        }
+    }
+
+    void disconnectTimerTimeout()
+    {
+        QTimer *t = qobject_cast<QTimer *>(sender());
+        if (t != nullptr) {
+            QString name = disconnectTimerMap.key(t);
+            if (name.isEmpty())
+                return;
+
+            doSignOut(name);
         }
     }
 };
 
-const ServerImpl::ServerFunction ServerImpl::ServerFunctions[SP_Max] = {&ServerImpl::heartbeatFunc, &ServerImpl::signInFunc, &ServerImpl::queryFunc, &ServerImpl::speakFunc};
+// clang-format off
+const ServerImpl::ServerFunction ServerImpl::ServerFunctions[SP_Max] = {
+    &ServerImpl::heartbeatFunc,
+    &ServerImpl::signInFunc,
+    &ServerImpl::queryFunc,
+    &ServerImpl::speakFunc,
+    &ServerImpl::signOutFunc,
+};
+// clang-format on
 
 Server::Server()
 {

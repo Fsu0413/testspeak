@@ -17,8 +17,15 @@ extern QVariantMap currentTlset;
 
 QString selfName;
 
-const Client::ClientFunction Client::ClientFunctions[CP_Max]
-    = {&Client::notifiedHeartBeat, &Client::notifiedSignedIn, &Client::notifiedSignedOut, &Client::notifiedQueryResult, &Client::notifiedSpoken};
+// clang-format off
+const Client::ClientFunction Client::ClientFunctions[CP_Max] = {
+    &Client::notifiedHeartBeat,
+    &Client::notifiedSignedIn,
+    &Client::notifiedSignedOut,
+    &Client::notifiedQueryResult,
+    &Client::notifiedSpoken
+};
+// clang-format on
 
 Client::Client(QObject *parent)
     : QObject(parent)
@@ -109,12 +116,6 @@ void Client::signIn()
         ob[QStringLiteral("protocolValue")] = int(SP_SignIn);
         QJsonDocument doc(ob);
         writeJsonDocument(doc);
-
-        // read current online player
-        QJsonObject ob2;
-        ob2[QStringLiteral("protocolValue")] = int(SP_Query);
-        QJsonDocument doc2(ob2);
-        writeJsonDocument(doc2);
     }
 
     QTimer *heartbeatTimer = new QTimer(this);
