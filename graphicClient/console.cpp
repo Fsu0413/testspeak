@@ -3,7 +3,6 @@
 #include "dialog.h"
 #include <QByteArray>
 #include <QDateTime>
-#include <QDebug>
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -11,6 +10,10 @@
 #include <QMap>
 #include <QMutex>
 #include <QThread>
+
+#include <iostream>
+
+using namespace std;
 
 QVariantMap config;
 QVariantMap currentTlset;
@@ -132,7 +135,7 @@ void Dialog::playerDetail(QJsonObject)
 void Dialog::playerSpoken(QString from, QString to, QString content, bool fromYou, bool toYou, bool groupsent, quint32 time)
 {
     QString dbg = QStringLiteral("Said: %1 to %2: %3").arg(from).arg(to).arg(content);
-    qDebug() << dbg;
+    std::cout << dbg.toLocal8Bit().constData() << std::endl;
 
     SpeakDetail x;
     x.content = content;
@@ -171,6 +174,9 @@ void Dialog::send()
 
         to = speakTo;
 
+            QString dbg = QStringLiteral("Send: %1: %2").arg(to).arg(edit);
+            std::cout << dbg.toLocal8Bit().constData() << std::endl;
+
         if (to == QStringLiteral("all"))
             to.clear();
 
@@ -188,6 +194,11 @@ void Dialog::userNameChanged()
 void Dialog::setNameCombo(const QString &name)
 {
     if (playerMap.contains(name)) {
+        if (speakTo != name)
+            {
+                QString dbg = QStringLiteral("Changing current speak to %1").arg(name);
+                std::cout << dbg.toLocal8Bit().constData() << std::endl;
+            }
         speakTo = name;
         userNameChanged();
     }
@@ -195,6 +206,10 @@ void Dialog::setNameCombo(const QString &name)
 
 void Dialog::setText(const QString &text)
 {
+    QString outputText = QStringLiteral("\n") + text;
+    if (text.startsWith(edit))
+        outputText = text.mid(edit.length());
+    std::cout << outputText.toLocal8Bit().constData() << std::flush;
     edit = text;
 }
 
@@ -204,6 +219,9 @@ void Dialog::setTextFocus()
 
 void Dialog::sendPress()
 {
+    QString outputText = QStringLiteral("\u21B2");
+std::cout << outputText.toLocal8Bit().constData() << std::flush;
+
 }
 
 void Dialog::sendRelease()
@@ -212,8 +230,7 @@ void Dialog::sendRelease()
 
 void Dialog::sendClick()
 {
-    QString dbg = QStringLiteral("Send: %1: %2").arg(speakTo).arg(edit);
-    qDebug() << dbg;
+    std::cout << std::endl;
     send();
 }
 
