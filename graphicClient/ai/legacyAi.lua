@@ -1,6 +1,8 @@
 
 local AiCommon = require("AiCommon")
 
+local localFunc = {}
+
 data = {
 	["repeatTime"] = 0,
 	["banned"] = {},
@@ -122,33 +124,68 @@ sendingstep = function()
 			timer = AiCommon.TimerConsts.sendDelay
 			table.remove(data.toview, 1)
 		end
-	elseif data.sendingStep == 3 then
+	elseif data.sendingStep == 101 then
 		if data.currentViewing.cancel then
 			data.currentViewing = {}
 			data.sendingStep = 0
-			data.sending = ""
-			data.typed = ""
-			me:setText("")
+		else
+			data.sendingStep = 102
+			me:setNameCombo(data.currentViewing.name)
+		end
+	elseif data.sendingStep == 102 then
+		if data.currentViewing.cancel then
+			data.currentViewing = {}
+			data.sendingStep = 0
 			timer = AiCommon.TimerConsts.sendDelay
 		else
-			if data.sending == "" then
+			if not data.currentViewing.time then
+				data.currentViewing.time = os.time()
+				localFunc.messageDetail1(me:getNewestSpokenMessage())
+			elseif data.currentViewing.content then
+				local passedTime = os.difftime(os.time(), data.currentViewing.time)
+				data.sendingStep = 103
+				timer = math.max(AiCommon.TimerConsts.thinkDelay - passedTime * 1000 - AiCommon.TimerConsts.sendDelay, 100)
+			else
+				local passedTime = os.difftime(os.time(), data.currentViewing.time)
+				if passedTime >= 30 then
+					data.currentViewing.cancel = true
+				end
+			end
+		end
+	elseif data.sendingStep == 103 then
+		if data.currentViewing.cancel then
+			data.currentViewing = {}
+			data.sendingStep = 0
+		else
+			data.sending = data.currentViewing.content
+			data.typed = ""
+			me:setTextFocus()
+			data.sendingStep = 3
+			timer = AiCommon.TimerConsts.sendDelay
+		end
+	elseif data.sendingStep == 3 then
+		if data.sending == "" then
+			if data.currentViewing.cancel then
+				data.sendingStep = 77
+				timer = AiCommon.TimerConsts.cancelDelay
+			else
 				data.sendingStep = 4
 				timer = AiCommon.TimerConsts.sendDelay
-			else
-				data.typed = data.typed .. me:getFirstChar(data.sending)
-				data.sending = me:removeFirstChar(data.sending)
-				me:setText(data.typed)
-				timer = AiCommon.TimerConsts.typeDelay
 			end
+		else
+			if data.currentViewing.cancel then
+				data.sendingStep = 76
+			end
+
+			data.typed = data.typed .. me:getFirstChar(data.sending)
+			data.sending = me:removeFirstChar(data.sending)
+			me:setText(data.typed)
+			timer = AiCommon.TimerConsts.typeDelay
 		end
 	elseif data.sendingStep == 4 then
 		if data.currentViewing.cancel then
-			data.currentViewing = {}
-			data.sendingStep = 0
-			data.sending = ""
-			data.typed = ""
-			me:setText("")
-			timer = AiCommon.TimerConsts.sendDelay
+			data.sendingStep = 77
+			timer = AiCommon.TimerConsts.cancelDelay
 		else
 			me:sendPress()
 			data.sendpressed = true
@@ -158,45 +195,35 @@ sendingstep = function()
 	elseif data.sendingStep == 5 then
 		if data.currentViewing.cancel then
 			me:sendRelease()
-			data.sending = ""
-			data.typed = ""
-			me:setText("")
+			data.sendingStep = 77
+			timer = AiCommon.TimerConsts.cancelDelay
 		else
 			me:sendClick()
+			data.sendingStep = 0
+			data.currentViewing = {}
+			timer = AiCommon.TimerConsts.sendDelay
 		end
 		data.sendpressed = false
-		data.sendingStep = 0
-		data.currentViewing = {}
-		timer = AiCommon.TimerConsts.sendDelay
-	elseif data.sendingStep == 101 then
-		data.sendingStep = 102
-		me:setNameCombo(data.currentViewing.name)
-		timer = AiCommon.TimerConsts.sendDelay
-	elseif data.sendingStep == 102 then
-		if not data.currentViewing.time then
-			data.currentViewing.time = os.time()
+	elseif data.sendingStep == 76 then
+		if (data.sending == "") or (math.random(0, 9) < 1) then
+			data.sendingStep = 77
+			timer = AiCommon.TimerConsts.cancelDelay
 		else
-			local passedTime = os.difftime(os.time(), data.currentViewing.time)
-			if passedTime >= 30 then
-				data.currentViewing.cancel = true
-			end
+			data.typed = data.typed .. me:getFirstChar(data.sending)
+			data.sending = me:removeFirstChar(data.sending)
+			me:setText(data.typed)
+			timer = AiCommon.TimerConsts.typeDelay
 		end
-
-		if data.currentViewing.cancel then
-			data.currentViewing = {}
-			data.sendingStep = 0
-			timer = AiCommon.TimerConsts.sendDelay
-		elseif data.currentViewing.content then
-			data.sending = data.currentViewing.content
-			data.typed = ""
-			me:setTextFocus()
-			data.sendingStep = 3
-			if data.currentViewing.contentIsFromTl then
-				timer = AiCommon.TimerConsts.thinkDelay
-			else
-				timer = AiCommon.TimerConsts.sendDelay
-			end
-		end
+	elseif data.sendingStep == 77 then
+		data.sending = ""
+		data.typed = ""
+		me:setTextFocus()
+		data.sendingStep = 78
+		timer = AiCommon.TimerConsts.sendDelay
+	elseif data.sendingStep == 78 then
+		me:setText("")
+		data.currentViewing = {}
+		data.sendingStep = 0
 	end
 
 	timer = AiCommon.generateRandom(timer)
@@ -218,9 +245,10 @@ cancelAllPendingSend = function(to)
 	end
 end
 
-sendTo = function(to, content, isFromTl)
+sendTo = function(to, content, isFromTl, isForcedSendToAll)
 	if not to then to = "all" end
 	me:debugOutput("sendTo".. to .. content)
+	cancelAllPendingSend(to)
 
 	if (data.currentViewing.name == to) and (data.sendingStep == 102) and (not data.currentViewing.cancel) then
 		data.currentViewing.content = content
@@ -230,7 +258,9 @@ sendTo = function(to, content, isFromTl)
 			["name"] = to,
 			["content"] = content,
 			["contentIsFromTl"] = isFromTl,
+			["forcedSendToAll"] = isForcedSendToAll,
 		}
+			me:debugOutput("insert to last: " .. to)
 		table.insert(data.toview, x)
 	end
 end
@@ -243,7 +273,7 @@ end
 findPerson = function()
 	me:debugOutput("findPerson")
 	if (data.speakingTo == "") and (not data.outoftime) then
-		sendTo(nil, getStringFromBase("findperson" .. me:gender()), false)
+		sendTo(nil, getStringFromBase("findperson" .. me:gender()), false, true)
 	end
 	me:addTimer(consts.findPersonTimerId, AiCommon.generateRandom(consts.findPersonTimeout))
 end
@@ -272,8 +302,6 @@ end
 talk = function(content)
 	me:killTimer(consts.timeoutTimerId)
 	data.timeoutTime = 0
-
-	cancelAllPendingSend(from)
 
 	if (data.sendingStep ~= 102) and (data.currentViewing.name == from) then
 		data.currentViewing.cancel = true
@@ -310,42 +338,55 @@ AiCommon.Callbacks.removePlayer = function(name)
 	end
 
 	cancelAllPendingSend(name)
+end
 
-	local flag = false
-	while not flag do
-		flag = true
-		for _, i in ipairs(data.banned) do
-			if i == name then
-				table.remove(data.banned, _)
-				flag = false
-				break
-			end
+local messageReceived = function(from)
+	local toview = {["name"] = from}
+
+	if from == "all" then
+		if data.speakingTo == "" then
+			me:debugOutput("insert to 1: " .. from)
+			table.insert(data.toview, 1, toview)
+		else
+			me:debugOutput("insert to last: " .. from)
+			table.insert(data.toview, toview)
+		end
+	else
+		if from == data.speakingTo then
+			me:debugOutput("insert to 1: " .. from)
+			table.insert(data.toview, 1, toview)
+		else
+			me:debugOutput("insert to last: " .. from)
+			table.insert(data.toview, toview)
 		end
 	end
 end
 
 AiCommon.Callbacks.messageReceived = function(from)
-	local toview = {["name"] = from}
-
-	if from == "all" then
-		if data.speakingTo == "" then
-			table.insert(data.toview, 1, toview)
-		else
-			table.insert(data.toview, toview)
-		end
-	else
-		if from == data.speakingTo then
-			table.insert(data.toview, 1, toview)
-		else
-			table.insert(data.toview, toview)
-		end
-	end
+	me:debugOutput("messageReceived"..from)
+	messageReceived(from)
 end
 
 AiCommon.Callbacks.messageDetail = function(detail)
+	if detail.fromYou then
+		return
+	end
+
+	if (not data.currentViewing.name)
+			or ((data.currentViewing.name == "all") and detail.groupSent)
+			or ((data.currentViewing.name == detail.from) and (not detail.groupSent)) then
+		messageReceived(detail.groupSent and "all" or detail.from)
+	end
+end
+
+--AiCommon.Callbacks.messageDetail = function(detail)
+localFunc.messageDetail1 = function(detail)
 local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtime)
 	me:debugOutput("playerSpoken"..from..content)
-	if fromYou then return end
+
+	if fromYou or (sendtime == 0) then
+		return
+	end
 
 	for _, i in ipairs(data.banned) do
 		if i == from then
@@ -407,10 +448,10 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtim
 				if data.samegendertimes[from] <= 3 then
 					sendTo(from, getStringFromBase("g" .. me:gender()), false)
 				elseif data.samegendertimes[from] <= 5 then
-					sendTo(from, getStringFromBase["g2" .. me:gender()), false)
+					sendTo(from, getStringFromBase("g2" .. me:gender()), false)
 				else
 					table.insert(data.banned, from)
-					sendTo(from, getStringFromBase["g3" .. me:gender()), false)
+					sendTo(from, getStringFromBase("g3" .. me:gender()), false)
 				end
 				return from
 			end
@@ -430,13 +471,14 @@ end
 			if data.currentViewing.content and async then
 				data.currentViewing.content = nil
 			end
-			if willSpeak ~= data.currentViewing.name then
+			if (willSpeak ~= data.currentViewing.name) and (not (data.currentViewing.forcedSendToAll and data.currentViewing.name == "all")) then
 				data.currentViewing.cancel = true
 			end
 		end
 	else
-		playerSpoken1(detail.from, detail.content, detail.fromYou, detail.toYou, detail.groupSent, detail.time)
+		me:debugOutput("dbg " .. data.currentViewing.name .. " " .. detail.from .. " " .. (data.currentViewing.cancel and "true" or "false"))
 	end
+	
 end
 
 tlReceive = function(value, sending, from)

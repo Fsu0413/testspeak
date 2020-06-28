@@ -207,7 +207,7 @@ void Dialog::userNameChanged()
             QString dbg = QStringLiteral("Last message about %1: %2 to %3 at %4: \"%5\"")
                               .arg(speakTo)
                               .arg(detail.fromYou ? QStringLiteral("You") : detail.from)
-                              .arg(detail.groupSent ? QStringLiteral("all") : (detail.toYou ? QStringLiteral("You") : QStringLiteral("Unknown")))
+                              .arg(detail.groupSent ? QStringLiteral("all") : (detail.toYou ? QStringLiteral("You") : (detail.fromYou ? detail.from : QStringLiteral("Unknown"))))
                               .arg(detail.time != 0 ? QDateTime::fromTime_t(detail.time).time().toString() : QStringLiteral("sometime"))
                               .arg(detail.content);
 

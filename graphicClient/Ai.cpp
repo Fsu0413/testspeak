@@ -100,6 +100,7 @@ bool Ai::queryTl(const QString &id, const QString &content, const QString &_key,
 
     return true;
 #else
+    (void)_key;
     QString reqStr = QStringLiteral("http://api.qingyunke.com/api.php?key=free&appid=0&msg=") + content;
     QUrl url = QUrl::fromUserInput(reqStr);
     if (!url.isValid())
@@ -149,8 +150,10 @@ QString Ai::removeFirstChar(const QString &c)
     return c.mid(1);
 }
 
-void Ai::debugOutput(const QString &)
+void Ai::debugOutput(const QString &c)
 {
+    (void)c;
+
     // qDebug() << c;
 }
 

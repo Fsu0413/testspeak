@@ -256,10 +256,7 @@ void Dialog::setText(const QString &text)
 void Dialog::setTextFocus()
 {
     edit->setFocus();
-    QMouseEvent pe(QEvent::MouseButtonPress, QPointF(0., 0.), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
-    edit->mousePressEvent(&pe);
-    QMouseEvent re(QEvent::MouseButtonRelease, QPointF(0., 0.), Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
-    edit->mouseReleaseEvent(&re);
+    edit->selectAll();
 }
 
 void Dialog::sendPress()
