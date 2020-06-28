@@ -17,6 +17,9 @@ extern QVariantMap config;
 extern QVariantMap currentTlset;
 
 QString selfName;
+
+QHostAddress addr;
+quint16 port;
 bool signedOff = false;
 
 // clang-format off
@@ -51,6 +54,9 @@ void Client::connectToHost(const QString &host, int port)
     connect(socket, &QTcpSocket::connected, this, &Client::signIn);
     connect(socket, &QTcpSocket::readyRead, this, &Client::socketReadyRead);
     connect(socket, &QTcpSocket::disconnected, this, &Client::lostConnection);
+
+    addr = host;
+    ::port = port;
 
     socket->connectToHost(host, port);
 }
@@ -138,8 +144,12 @@ void Client::signIn()
 void Client::lostConnection()
 {
     if (socket != nullptr && !signedOff) {
-        QHostAddress addr = socket->peerAddress();
-        quint16 port = socket->peerPort();
+        socket->deleteLater();
+
+        socket = new QTcpSocket(this);
+        connect(socket, &QTcpSocket::connected, this, &Client::signIn);
+        connect(socket, &QTcpSocket::readyRead, this, &Client::socketReadyRead);
+        connect(socket, &QTcpSocket::disconnected, this, &Client::lostConnection);
 
         socket->connectToHost(addr, port);
     }

@@ -144,9 +144,18 @@ Dialog::~Dialog()
 
 void Dialog::addPlayer(QString name, QString gender)
 {
-    QListWidgetItem *item = new QListWidgetItem(name);
+    QListWidgetItem *item = nullptr;
+
+    for (int i = 0; i < userNames->count(); ++i) {
+        if (userNames->item(i)->text() == name)
+            item = userNames->item(i);
+    }
+
+    if (item == nullptr) {
+        item = new QListWidgetItem(name);
+        userNames->addItem(item);
+    }
     item->setData(GenderRole, gender);
-    userNames->addItem(item);
 }
 
 void Dialog::removePlayer(QString name)
