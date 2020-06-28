@@ -9,7 +9,7 @@ QT       += core network
 TEMPLATE = app
 CONFIG -= app_bundle
 
-CONFIG += graphicsclient
+#CONFIG += graphicsclient
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked as deprecated (the exact warnings

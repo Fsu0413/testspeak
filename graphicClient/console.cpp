@@ -3,6 +3,7 @@
 #include "dialog.h"
 #include <QByteArray>
 #include <QDateTime>
+#include <QDebug>
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -10,6 +11,7 @@
 #include <QMap>
 #include <QMutex>
 #include <QThread>
+#include <QVariant>
 
 #include <iostream>
 
@@ -111,6 +113,9 @@ void Dialog::addPlayer(QString name, QString gender)
     detail->gender = gender;
     detail->hasUnreadMessage = false;
     playerMap[name] = detail;
+
+    QString dbg = QStringLiteral("Player Add: %1 (%2)").arg(name).arg(gender);
+    std::cout << dbg.toLocal8Bit().constData() << std::endl;
 }
 
 void Dialog::removePlayer(QString name)
@@ -119,6 +124,9 @@ void Dialog::removePlayer(QString name)
         speakTo.clear();
         userNameChanged();
     }
+
+    QString dbg = QStringLiteral("Player remove: %1").arg(name);
+    std::cout << dbg.toLocal8Bit().constData() << std::endl;
 
     if (playerMap.contains(name))
         delete playerMap.take(name);
@@ -134,9 +142,6 @@ void Dialog::playerDetail(QJsonObject)
 
 void Dialog::playerSpoken(QString from, QString to, QString content, bool fromYou, bool toYou, bool groupsent, quint32 time)
 {
-    QString dbg = QStringLiteral("Said: %1 to %2: %3").arg(from).arg(to).arg(content);
-    std::cout << dbg.toLocal8Bit().constData() << std::endl;
-
     SpeakDetail x;
     x.content = content;
     x.from = from;
@@ -160,8 +165,12 @@ void Dialog::playerSpoken(QString from, QString to, QString content, bool fromYo
     if (speakMap[relatedPerson]->length() > 100)
         speakMap[relatedPerson]->takeFirst();
 
-    if (!fromYou && playerMap.contains(relatedPerson) && speakTo != relatedPerson)
+    if (!fromYou && playerMap.contains(relatedPerson) && speakTo != relatedPerson) {
         playerMap[relatedPerson]->hasUnreadMessage = true;
+
+        QString dbg = QStringLiteral("unreadMessage: %1").arg(relatedPerson);
+        std::cout << dbg.toLocal8Bit().constData() << std::endl;
+    }
 }
 
 void Dialog::send()
@@ -174,8 +183,8 @@ void Dialog::send()
 
         to = speakTo;
 
-            QString dbg = QStringLiteral("Send: %1: %2").arg(to).arg(edit);
-            std::cout << dbg.toLocal8Bit().constData() << std::endl;
+        QString dbg = QStringLiteral("Send: %1: %2").arg(to).arg(edit);
+        std::cout << dbg.toLocal8Bit().constData() << std::endl;
 
         if (to == QStringLiteral("all"))
             to.clear();
@@ -189,16 +198,31 @@ void Dialog::userNameChanged()
 {
     if (playerMap.contains(speakTo))
         playerMap[speakTo]->hasUnreadMessage = false;
+
+    if (speakMap.contains(speakTo)) {
+        QList<SpeakDetail> *details = speakMap[speakTo];
+        if (details->length() > 0) {
+            const SpeakDetail &detail = details->last();
+
+            QString dbg = QStringLiteral("Last message about %1: %2 to %3 at %4: \"%5\"")
+                              .arg(speakTo)
+                              .arg(detail.fromYou ? QStringLiteral("You") : detail.from)
+                              .arg(detail.groupSent ? QStringLiteral("all") : (detail.toYou ? QStringLiteral("You") : QStringLiteral("Unknown")))
+                              .arg(detail.time != 0 ? QDateTime::fromTime_t(detail.time).time().toString() : QStringLiteral("sometime"))
+                              .arg(detail.content);
+
+            std::cout << dbg.toLocal8Bit().constData() << std::endl;
+        }
+    }
 }
 
 void Dialog::setNameCombo(const QString &name)
 {
     if (playerMap.contains(name)) {
-        if (speakTo != name)
-            {
-                QString dbg = QStringLiteral("Changing current speak to %1").arg(name);
-                std::cout << dbg.toLocal8Bit().constData() << std::endl;
-            }
+        if (speakTo != name) {
+            QString dbg = QStringLiteral("Changing current speak to %1").arg(name);
+            std::cout << dbg.toLocal8Bit().constData() << std::endl;
+        }
         speakTo = name;
         userNameChanged();
     }
@@ -219,9 +243,8 @@ void Dialog::setTextFocus()
 
 void Dialog::sendPress()
 {
-    QString outputText = QStringLiteral("\u21B2");
-std::cout << outputText.toLocal8Bit().constData() << std::flush;
-
+    QString outputText = QStringLiteral(u"\u21B2");
+    std::cout << outputText.toLocal8Bit().constData() << std::flush;
 }
 
 void Dialog::sendRelease()
