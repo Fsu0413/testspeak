@@ -1,6 +1,6 @@
-#include "console.h"
 #include "Ai.h"
 #include "client.h"
+#include "dialog.h"
 #include <QByteArray>
 #include <QDateTime>
 #include <QDebug>

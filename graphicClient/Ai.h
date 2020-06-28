@@ -1,11 +1,7 @@
 #ifndef AI_H
 #define AI_H
 
-#ifdef GRAPHICSCLIENT
 #include "dialog.h"
-#else
-#include "console.h"
-#endif
 
 #include <QJsonObject>
 #include <QMap>
