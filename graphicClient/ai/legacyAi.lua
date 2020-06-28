@@ -461,7 +461,7 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtim
 		end
 	end
 end
-	if (data.sendingStep == 102) and ((data.currentViewing.name == detail.from) or (data.currentViewing.name == "all")) and (not data.currentViewing.cancel) then
+	if (data.sendingStep == 102) and (not data.currentViewing.cancel) then
 		local willSpeak, async = playerSpoken1(detail.from, detail.content, detail.fromYou, detail.toYou, detail.groupSent, detail.time)
 		if not willSpeak then
 			if not data.currentViewing.content then
@@ -475,10 +475,7 @@ end
 				data.currentViewing.cancel = true
 			end
 		end
-	else
-		me:debugOutput("dbg " .. data.currentViewing.name .. " " .. detail.from .. " " .. (data.currentViewing.cancel and "true" or "false"))
 	end
-	
 end
 
 tlReceive = function(value, sending, from)

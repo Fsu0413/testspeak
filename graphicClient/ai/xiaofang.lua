@@ -23,6 +23,8 @@ data = {
 }
 
 consts = {
+	["detectLostMessageTimerId"] = AiCommon.UserTimerId + 1,
+	["detectLostMessageTimerInterval"] = 300000,
 	["operationTimerId"] = AiCommon.UserTimerId + 3,
 	["outoftimeTimerId"] = AiCommon.UserTimerId + 4,
 
@@ -387,7 +389,7 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtim
 		end
 	end
 end
-	if (data.sendingStep == 102) and ((data.currentViewing.name == detail.from) or (data.currentViewing.name == "all")) and (not data.currentViewing.cancel) then
+	if (data.sendingStep == 102) and (not data.currentViewing.cancel) then
 		local willSpeak, async = playerSpoken1(detail.from, detail.content, detail.fromYou, detail.toYou, detail.groupSent, detail.time)
 		if not willSpeak then
 			if not data.currentViewing.content then
@@ -472,6 +474,37 @@ timeout = function(timerid)
 		else
 			me:addTimer(consts.outoftimeTimerId, AiCommon.TimerConsts.outoftimeTimeout)
 		end
+	elseif (timerid == consts.detectLostMessageTimerId) then
+		local contains = function(t, it)
+			for _, i in ipairs(t) do
+				if i == it then
+					return true
+				end
+			end
+			return false
+		end
+		
+		local tab = {}
+		for k, _ in pairs(data.recvList) do
+			if not contains(tab, k) then
+				table.insert(tab, k)
+			end
+		end
+		for k, _ in pairs(data.lastSent) do
+			if not contains(tab, k) then
+				table.insert(tab, k)
+			end
+		end
+		for k, _ in pairs(data.recvContent) do
+			if not contains(tab, k) then
+				table.insert(tab, k)
+			end
+		end
+		
+		for _, i in ipairs(tab) do
+			table.insert(data.toview, {name=i})
+		end
+		me:addTimer(consts.detectLostMessageTimerId, consts.detectLostMessageTimerInterval)
 	else
 		AiCommon.timeout(timerid)
 	end
