@@ -24,7 +24,7 @@ data = {
 
 consts = {
 	["detectLostMessageTimerId"] = AiCommon.UserTimerId + 1,
-	["detectLostMessageTimerInterval"] = 300000,
+	["detectLostMessageTimerInterval"] = 45000,
 	["operationTimerId"] = AiCommon.UserTimerId + 3,
 	["outoftimeTimerId"] = AiCommon.UserTimerId + 4,
 }

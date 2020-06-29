@@ -7,9 +7,9 @@ AiCommon.Callbacks = {}
 AiCommon.TimerConsts = {
 	["outoftimeTimeout"] = 1000,
 	["thinkDelay"] = 10000,
-	["clickDelay"] = 200,
-	["typeDelay"] = 200,
-	["sendDelay"] = 1000,
+	["clickDelay"] = 800,
+	["typeDelay"] = 300,
+	["sendDelay"] = 2000,
 }
 
 local data = {
