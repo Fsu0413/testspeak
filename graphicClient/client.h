@@ -1,6 +1,8 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+#include <QAbstractSocket>
+#include <QJsonDocument>
 #include <QJsonObject>
 #include <QObject>
 #include <QString>
@@ -35,6 +37,10 @@ class Client : public QObject
 {
     Q_OBJECT
 
+private:
+    void writeJsonDocument(const QJsonDocument &doc);
+    void resendMessage();
+
 public:
     Client(QObject *parent = nullptr);
 
@@ -53,6 +59,7 @@ public:
 public slots:
     void signIn();
     void lostConnection();
+    void socketError(QAbstractSocket::SocketError e);
     void socketReadyRead();
     void queryPlayerDetail(QString name);
     void speak(QString to, QString content);

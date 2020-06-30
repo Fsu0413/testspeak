@@ -21,6 +21,8 @@ QString selfName;
 QHostAddress addr;
 quint16 port;
 bool signedOff = false;
+bool disconnected = false;
+QList<QJsonDocument> disconnectPendingMessages;
 
 // clang-format off
 const Client::ClientFunction Client::ClientFunctions[CP_Max] = {
@@ -37,12 +39,24 @@ Client::Client(QObject *parent)
 {
 }
 
-inline void writeJsonDocument(const QJsonDocument &doc)
+void Client::writeJsonDocument(const QJsonDocument &doc)
 {
-    QByteArray arr = doc.toJson(QJsonDocument::Compact);
-    arr.append("\n");
-    socket->write(arr);
-    socket->flush();
+    if (!disconnected) {
+        QByteArray arr = doc.toJson(QJsonDocument::Compact);
+        arr.append("\n");
+        socket->write(arr);
+        socket->flush();
+    } else {
+        disconnectPendingMessages << doc;
+    }
+}
+
+void Client::resendMessage()
+{
+    foreach (const QJsonDocument &doc, disconnectPendingMessages)
+        writeJsonDocument(doc);
+
+    disconnectPendingMessages.clear();
 }
 
 void Client::connectToHost(const QString &host, int port)
@@ -54,6 +68,7 @@ void Client::connectToHost(const QString &host, int port)
     connect(socket, &QTcpSocket::connected, this, &Client::signIn);
     connect(socket, &QTcpSocket::readyRead, this, &Client::socketReadyRead);
     connect(socket, &QTcpSocket::disconnected, this, &Client::lostConnection);
+    connect(socket, (void (QTcpSocket::*)(QAbstractSocket::SocketError))(&QTcpSocket::error), this, &Client::socketError);
 
     addr = host;
     ::port = port;
@@ -132,27 +147,40 @@ void Client::signIn()
         writeJsonDocument(doc);
     }
 
-    QTimer *heartbeatTimer = new QTimer(this);
-    heartbeatTimer->setInterval(5000);
-    heartbeatTimer->setSingleShot(false);
-    connect(heartbeatTimer, &QTimer::timeout, this, &Client::sendHeartBeat);
-    heartbeatTimer->start();
+    if (!disconnected) {
+        QTimer *heartbeatTimer = new QTimer(this);
+        heartbeatTimer->setInterval(5000);
+        heartbeatTimer->setSingleShot(false);
+        connect(heartbeatTimer, &QTimer::timeout, this, &Client::sendHeartBeat);
+        heartbeatTimer->start();
 
-    emit signedIn();
+        emit signedIn();
+    } else {
+        disconnected = false;
+        resendMessage();
+    }
 }
 
 void Client::lostConnection()
 {
-    if (socket != nullptr && !signedOff) {
+    if (socket != nullptr && !signedOff && sender() == socket) {
+        disconnected = true;
         socket->deleteLater();
 
         socket = new QTcpSocket(this);
         connect(socket, &QTcpSocket::connected, this, &Client::signIn);
         connect(socket, &QTcpSocket::readyRead, this, &Client::socketReadyRead);
         connect(socket, &QTcpSocket::disconnected, this, &Client::lostConnection);
+        connect(socket, (void (QTcpSocket::*)(QAbstractSocket::SocketError))(&QTcpSocket::error), this, &Client::socketError);
 
         socket->connectToHost(addr, port);
     }
+}
+
+void Client::socketError(QAbstractSocket::SocketError e)
+{
+    (void)e;
+    lostConnection();
 }
 
 void Client::socketReadyRead()
@@ -186,10 +214,12 @@ void Client::speak(QString to, QString content)
 
 void Client::sendHeartBeat()
 {
-    QJsonObject ob;
-    ob[QStringLiteral("protocolValue")] = int(SP_Zero);
-    QJsonDocument doc(ob);
-    writeJsonDocument(doc);
+    if (!disconnected && !socket.isNull()) {
+        QJsonObject ob;
+        ob[QStringLiteral("protocolValue")] = int(SP_Zero);
+        QJsonDocument doc(ob);
+        writeJsonDocument(doc);
+    }
 }
 
 void Client::queryPlayerDetail(QString name)
