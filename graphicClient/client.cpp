@@ -136,6 +136,7 @@ void Client::notifiedSpoken(const QJsonObject &contents)
 
 void Client::signIn()
 {
+    disconnected = false;
     if (config.contains(QStringLiteral("tlset"))) {
         // currentTlSet has been read by readConfig
         QJsonObject ob = QJsonObject::fromVariantMap(currentTlset);
@@ -160,7 +161,6 @@ void Client::signIn()
     }
 
     resendMessage();
-    disconnected = false;
 }
 
 void Client::lostConnection()
