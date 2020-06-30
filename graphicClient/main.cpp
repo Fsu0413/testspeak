@@ -5,7 +5,12 @@
 #include <QApplication>
 #include <QStyleFactory>
 #else
+#ifdef Q_OS_ANDROID
+#include <QGuiApplication>
+#else
 #include <QCoreApplication>
+#endif
+
 #endif
 
 int main(int argc, char *argv[])
@@ -14,7 +19,11 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setStyle(QStringLiteral("Fusion"));
 #else
+#ifdef Q_OS_ANDROID
+    QGuiApplication a(argc, argv);
+#else
     QCoreApplication a(argc, argv);
+#endif
 #endif
 
 #ifdef Q_OS_ANDROID

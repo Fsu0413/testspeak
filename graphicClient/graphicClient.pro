@@ -94,12 +94,19 @@ CONFIG(graphicsclient) {
     DEFINES += GRAPHICSCLIENT
     SOURCES += dialog.cpp
     TARGET = graphicClient
-} else {
+    ANDROID_PACKAGE_SOURCE_DIR = $$_PRO_FILE_PWD_/android
+} else: !android {
     CONFIG += console
     QT -= gui widgets
     DEFINES += CONSOLECLIENT
     SOURCES += console.cpp
     TARGET = consoleClient
+} else {
+    QT += gui
+    QT -= widgets
+    TARGET = graphicClient
+    DEFINES += CONSOLECLIENT
+    SOURCES += console.cpp
 }
 
 INCLUDEPATH += $$_PRO_FILE_PWD_/lua
@@ -117,8 +124,6 @@ macos {
     DEFINES += LUA_USE_MACOSX
     LIBS += -lreadline
 }
-
-ANDROID_PACKAGE_SOURCE_DIR = $$_PRO_FILE_PWD_/android
 
 OTHER_FILES += \
     Ai.i
