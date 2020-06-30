@@ -20,6 +20,7 @@ QString selfName;
 
 QHostAddress addr;
 quint16 port;
+bool signedOn = false;
 bool signedOff = false;
 bool disconnected = false;
 QList<QJsonDocument> disconnectPendingMessages;
@@ -41,7 +42,7 @@ Client::Client(QObject *parent)
 
 void Client::writeJsonDocument(const QJsonDocument &doc)
 {
-    if (!disconnected) {
+    if (signedOn && !disconnected) {
         QByteArray arr = doc.toJson(QJsonDocument::Compact);
         arr.append("\n");
         socket->write(arr);
@@ -147,7 +148,8 @@ void Client::signIn()
         writeJsonDocument(doc);
     }
 
-    if (!disconnected) {
+    if (!signedOn) {
+        signedOn = true;
         QTimer *heartbeatTimer = new QTimer(this);
         heartbeatTimer->setInterval(5000);
         heartbeatTimer->setSingleShot(false);
@@ -155,10 +157,10 @@ void Client::signIn()
         heartbeatTimer->start();
 
         emit signedIn();
-    } else {
-        disconnected = false;
-        resendMessage();
     }
+
+    resendMessage();
+    disconnected = false;
 }
 
 void Client::lostConnection()
@@ -166,6 +168,8 @@ void Client::lostConnection()
     if (socket != nullptr && !signedOff && sender() == socket) {
         disconnected = true;
         socket->deleteLater();
+
+        qDebug() << __FUNCTION__;
 
         socket = new QTcpSocket(this);
         connect(socket, &QTcpSocket::connected, this, &Client::signIn);

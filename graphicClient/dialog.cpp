@@ -136,7 +136,7 @@ Dialog::Dialog(QWidget *parent)
 
 Dialog::~Dialog()
 {
-    while (!aiThread->isFinished())
+    while (aiThread->isRunning())
         aiThread->wait(1000);
 
     qDeleteAll(speakMap);
@@ -328,14 +328,14 @@ void Dialog::refreshMessageList()
 
 void Dialog::closeEvent(QCloseEvent *event)
 {
-    if (client != nullptr)
-        client->disconnectFromHost();
-
     if (aiThread->isRunning()) {
         aiThread->quit();
         while (!aiThread->isFinished())
             qApp->processEvents();
     }
+
+    if (client != nullptr)
+        client->disconnectFromHost();
 
     QWidget::closeEvent(event);
 }
