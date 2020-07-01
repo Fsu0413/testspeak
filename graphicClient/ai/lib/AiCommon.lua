@@ -10,6 +10,7 @@ AiCommon.TimerConsts = {
 	["clickDelay"] = 800,
 	["typeDelay"] = 300,
 	["sendDelay"] = 2000,
+	["cancelDelay"] = 1000,
 }
 
 local data = {
