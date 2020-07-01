@@ -249,7 +249,7 @@ end
 sendTo = function(to, content, isFromTl, isForcedSendToAll)
 	if not to then to = "all" end
 	
-	if to ~= "all" then
+	if (to ~= "all") and recvContentNotReplyed[to] then
 		data.recvContent[to] = {
 			time = data.recvContentNotReplyed[to].time,
 			content = data.recvContentNotReplyed[to].content,
