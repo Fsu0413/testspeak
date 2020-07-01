@@ -7,6 +7,7 @@ data = {
 	["recvList"] = {},
 	["lastSent"] = {},
 	["recvContent"] = {},
+	["recvContentNotReplyed"] = {},
 
 	["outoftime"] = false,
 	["outoftimeDay"] = 0,
@@ -197,6 +198,14 @@ end
 
 sendTo = function(to, content, isFromTl)
 	if not to then to = "all" end
+	
+	if to ~= "all" then
+		data.recvContent[to] = {
+			time = data.recvContentNotReplyed[to].time,
+			content = data.recvContentNotReplyed[to].content,
+		}
+	end
+	
 	me:debugOutput("sendTo".. to .. content)
 	cancelAllPendingSend(to)
 
@@ -341,10 +350,17 @@ local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtim
 	if recvContent and (recvContent.time == sendtime) and (recvContent.content == content) then
 		return
 	end
-	data.recvContent[relatedPerson] = {
-		["time"] = sendtime,
-		["content"] = content
-	}
+	if relatedPerson == "all" then
+		data.recvContent[relatedPerson] = {
+			time = sendtime,
+			content = content
+		}
+	else
+		data.recvContentNotReplyed[relatedPerson] = {
+			time = sendtime,
+			content = content
+		}
+	end
 
 	for _, i in ipairs(data.outoftimeKnown) do
 		if i == from then
