@@ -162,7 +162,7 @@ void Dialog::playerSpoken(QString from, QString to, QString content, bool fromYo
         speakMap[relatedPerson] = new QList<SpeakDetail>;
 
     speakMap[relatedPerson]->append(x);
-    if (speakMap[relatedPerson]->length() > 100)
+    if (speakMap[relatedPerson]->length() > 300)
         speakMap[relatedPerson]->takeFirst();
 
     if (!fromYou && playerMap.contains(relatedPerson) && speakTo != relatedPerson) {

@@ -118,7 +118,7 @@ local getNewestInfo = function()
 
 	local newestSpokenMesage = me:getNewestSpokenMessage()
 	if not messageEqual(newestSpokenMesage) then
-		if newestSpokenMesage.content ~= "" then
+		if (newestSpokenMesage.content ~= "") and (not newestSpokenMesage.fromYou) then
 			callMessageReceived(data.currentName)
 		end
 	end
