@@ -131,7 +131,7 @@ sendingstep = function()
 			data.sendingStep = 0
 		else
 			data.sendingStep = 102
-			me:setNameCombo(data.currentViewing.name)
+			AiCommon.setNameCombo(data.currentViewing.name)
 		end
 	elseif data.sendingStep == 102 then
 		if data.currentViewing.cancel then
@@ -232,12 +232,40 @@ sendingstep = function()
 	me:addTimer(consts.operationTimerId, timer)
 end
 
+insertSend = function(t, pos)
+	if (not t.content) and (not pos) then
+		for _, p in ipairs(data.toview) do
+			if p.name == t.name then
+				return
+			end
+		end
+	else
+		local exist = true
+		while exist do
+			exist = false
+			for _, p in ipairs(data.toview) do
+				if (p.name == t.name) and not p.content then
+					table.remove(data.toview, _)
+					exist = true
+					break
+				end
+			end
+		end
+	end
+	
+	if not pos then
+		table.insert(data.toview, t)
+	else
+		table.insert(data.toview, pos, t)
+	end
+end
+
 cancelAllPendingSend = function(to)
 	local exist = true
 	while exist do
 		exist = false
 		for _, p in ipairs(data.toview) do
-			if p.name == to then
+			if p.name == to and not p.forcedSendToAll then
 				table.remove(data.toview, _)
 				exist = true
 				break
@@ -269,8 +297,7 @@ sendTo = function(to, content, isFromTl, isForcedSendToAll)
 			["contentIsFromTl"] = isFromTl,
 			["forcedSendToAll"] = isForcedSendToAll,
 		}
-			me:debugOutput("insert to last: " .. to)
-		table.insert(data.toview, x)
+		insertSend(x)
 	end
 end
 
@@ -354,19 +381,15 @@ local messageReceived = function(from)
 
 	if from == "all" then
 		if data.speakingTo == "" then
-			me:debugOutput("insert to 1: " .. from)
-			table.insert(data.toview, 1, toview)
+			insertSend(toview, 1)
 		else
-			me:debugOutput("insert to last: " .. from)
-			table.insert(data.toview, toview)
+			insertSend(toview)
 		end
 	else
 		if from == data.speakingTo then
-			me:debugOutput("insert to 1: " .. from)
-			table.insert(data.toview, 1, toview)
+			insertSend(toview, 1)
 		else
-			me:debugOutput("insert to last: " .. from)
-			table.insert(data.toview, toview)
+			insertSend(toview)
 		end
 	end
 end
@@ -376,19 +399,6 @@ AiCommon.Callbacks.messageReceived = function(from)
 	messageReceived(from)
 end
 
-AiCommon.Callbacks.messageDetail = function(detail)
-	if detail.fromYou then
-		return
-	end
-
-	if (not data.currentViewing.name)
-			or ((data.currentViewing.name == "all") and detail.groupSent)
-			or ((data.currentViewing.name == detail.from) and (not detail.groupSent)) then
-		messageReceived(detail.groupSent and "all" or detail.from)
-	end
-end
-
---AiCommon.Callbacks.messageDetail = function(detail)
 localFunc.messageDetail1 = function(detail)
 local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtime)
 	me:debugOutput("playerSpoken"..from..content)
@@ -491,6 +501,8 @@ end
 				data.currentViewing.cancel = true
 			end
 		end
+	elseif data.sendingStep ~= 102 then
+		me:debugOutput("messageDetail1: impossible?")
 	end
 end
 

@@ -169,8 +169,6 @@ void Client::lostConnection()
         disconnected = true;
         socket->deleteLater();
 
-        qDebug() << __FUNCTION__;
-
         socket = new QTcpSocket(this);
         connect(socket, &QTcpSocket::connected, this, &Client::signIn);
         connect(socket, &QTcpSocket::readyRead, this, &Client::socketReadyRead);

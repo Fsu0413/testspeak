@@ -17,6 +17,7 @@ local data = {
 	onlinePlayers = {},
 	newMessagePlayers = {},
 	newestMessage = {},
+	currentName = "",
 }
 
 local consts = {
@@ -48,21 +49,15 @@ local callMessageReceived = function(name)
 	end
 end
 
-local callMessageDetail = function(name)
-	me:debugOutput("callMessageDetail" .. name.from)
-	local x = AiCommon.Callbacks.messageDetail
-	if x and (type(x) == "function") then
-		x(name)
-	end
-end
-
 local messageEqual = function(toJudge)
-	if data.newestMessage.from ~= toJudge.from then return false end
-	if data.newestMessage.fromYou ~= toJudge.fromYou then return false end
-	if data.newestMessage.toYou ~= toJudge.toYou then return false end
-	if data.newestMessage.groupSent ~= toJudge.groupSent then return false end
-	if data.newestMessage.time ~= toJudge.time then return false end
-	if data.newestMessage.content ~= toJudge.content then return false end
+	if not data.newestMessage[data.currentName] then return true end
+	
+	if data.newestMessage[data.currentName].from ~= toJudge.from then return false end
+	if data.newestMessage[data.currentName].fromYou ~= toJudge.fromYou then return false end
+	if data.newestMessage[data.currentName].toYou ~= toJudge.toYou then return false end
+	if data.newestMessage[data.currentName].groupSent ~= toJudge.groupSent then return false end
+	if data.newestMessage[data.currentName].time ~= toJudge.time then return false end
+	if data.newestMessage[data.currentName].content ~= toJudge.content then return false end
 
 	return true
 end
@@ -114,6 +109,7 @@ local getNewestInfo = function()
 		end
 
 		if not contains then
+			data.newestMessage[x] = nil
 			callMessageReceived(x)
 		end
 	end
@@ -123,11 +119,11 @@ local getNewestInfo = function()
 	local newestSpokenMesage = me:getNewestSpokenMessage()
 	if not messageEqual(newestSpokenMesage) then
 		if newestSpokenMesage.content ~= "" then
-			callMessageDetail(newestSpokenMesage)
+			callMessageReceived(data.currentName)
 		end
 	end
 
-	data.newestMessage = newestSpokenMesage
+	data.newestMessage[data.currentName] = newestSpokenMesage
 end
 
 AiCommon.timeout = function(timerId)
@@ -141,6 +137,11 @@ AiCommon.generateRandom = function(rand)
 	local randBase = math.min(rand, 10000)
 	local randFixed = rand - randBase
 	return randFixed + math.random(randBase * 0.8, randBase * 1.1)
+end
+
+AiCommon.setNameCombo = function(name)
+	data.currentName = name
+	me:setNameCombo(name)
 end
 
 me:addTimer(consts.GetNewestInfoTimerId, consts.GetNewestInfoTimeout)

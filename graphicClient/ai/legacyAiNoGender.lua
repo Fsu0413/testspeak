@@ -108,7 +108,7 @@ sendingstep = function()
 			data.sendingStep = 0
 		else
 			data.sendingStep = 102
-			me:setNameCombo(data.currentViewing.name)
+			AiCommon.setNameCombo(data.currentViewing.name)
 		end
 	elseif data.sendingStep == 102 then
 		if data.currentViewing.cancel then
@@ -348,19 +348,6 @@ AiCommon.Callbacks.messageReceived = function(from)
 	messageReceived(from)
 end
 
-AiCommon.Callbacks.messageDetail = function(detail)
-	if detail.fromYou then
-		return
-	end
-
-	if (not data.currentViewing.name)
-			or ((data.currentViewing.name == "all") and detail.groupSent)
-			or ((data.currentViewing.name == detail.from) and (not detail.groupSent)) then
-		messageReceived(detail.groupSent and "all" or detail.from)
-	end
-end
-
---AiCommon.Callbacks.messageDetail = function(detail)
 localFunc.messageDetail1 = function(detail)
 local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtime)
 	me:debugOutput("playerSpoken"..from..content)
@@ -442,6 +429,8 @@ end
 				data.currentViewing.cancel = true
 			end
 		end
+	elseif data.sendingStep ~= 102 then
+		me:debugOutput("messageDetail1: impossible?")
 	end
 end
 

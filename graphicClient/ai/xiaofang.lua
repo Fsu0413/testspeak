@@ -96,7 +96,7 @@ sendingstep = function()
 			data.sendingStep = 0
 		else
 			data.sendingStep = 102
-			me:setNameCombo(data.currentViewing.name)
+			AiCommon.setNameCombo(data.currentViewing.name)
 		end
 	elseif data.sendingStep == 102 then
 		if data.currentViewing.cancel then
@@ -197,6 +197,34 @@ sendingstep = function()
 	me:addTimer(consts.operationTimerId, timer)
 end
 
+insertSend = function(t, pos)
+	if (not t.content) and (not pos) then
+		for _, p in ipairs(data.toview) do
+			if p.name == t.name then
+				return
+			end
+		end
+	else
+		local exist = true
+		while exist do
+			exist = false
+			for _, p in ipairs(data.toview) do
+				if (p.name == t.name) and not p.content then
+					table.remove(data.toview, _)
+					exist = true
+					break
+				end
+			end
+		end
+	end
+	
+	if not pos then
+		table.insert(data.toview, t)
+	else
+		table.insert(data.toview, pos, t)
+	end
+end
+
 cancelAllPendingSend = function(to)
 	local exist = true
 	while exist do
@@ -233,7 +261,7 @@ sendTo = function(to, content, isFromTl)
 			["content"] = content,
 			["contentIsFromTl"] = isFromTl,
 		}
-		table.insert(data.toview, x)
+		insertSend(x)
 	end
 end
 
@@ -319,9 +347,9 @@ end
 local messageReceived = function(from)
 	if from == data.currentViewing.name then
 		data.currentViewing.cancel = true
-		table.insert(data.toview, 1, {name=from})
+		insertSend({name=from},1)
 	else
-		table.insert(data.toview, {name=from})
+		insertSend({name=from})
 	end
 end
 
@@ -330,20 +358,6 @@ AiCommon.Callbacks.messageReceived = function(from)
 	messageReceived(from)
 end
 
-
-AiCommon.Callbacks.messageDetail = function(detail)
-	if detail.fromYou then
-		return
-	end
-
-	if (not data.currentViewing.name)
-			or ((data.currentViewing.name == "all") and detail.groupSent)
-			or ((data.currentViewing.name == detail.from) and (not detail.groupSent)) then
-		messageReceived(detail.groupSent and "all" or detail.from)
-	end
-end
-
---AiCommon.Callbacks.messageDetail = function(detail)
 localFunc.messageDetail1 = function(detail)
 local playerSpoken1 = function(from, content, fromYou, toYou, groupsent, sendtime)
 	me:debugOutput("playerSpoken"..from..content)
@@ -419,8 +433,9 @@ end
 				data.currentViewing.cancel = true
 			end
 		end
+	elseif data.sendingStep ~= 102 then
+		me:debugOutput("messageDetail1: impossible?")
 	end
-
 end
 
 tlReceive = function(value, sending, from)
@@ -518,7 +533,7 @@ timeout = function(timerid)
 		end
 		
 		for _, i in ipairs(tab) do
-			table.insert(data.toview, {name=i})
+			insertSend({name=i})
 		end
 		me:addTimer(consts.detectLostMessageTimerId, consts.detectLostMessageTimerInterval)
 	else
